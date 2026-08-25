@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_RA_TREASURER_TITLE_LIST_VIEW_BOOKINGS" option="View">
+        <message>
+                        <![CDATA[COM_RA_TREASURER_TITLE_LIST_VIEW_BOOKINGS_DESC]]>
+        </message>
+	</layout>
+	
+</metadata>
