@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="Bookable Events" option="View">
+        <message>
+                        <![CDATA[List of all Events where bookings are permitted]]>
+        </message>
+	</layout>
+	
+</metadata>

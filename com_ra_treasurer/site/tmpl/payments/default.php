@@ -1,7 +1,10 @@
 <?php
 /**
- * 20/08/26 created by component-creator
- * 25/08/26 CB changed columns
+ * @version    CVS: 1.0.2
+ * @package    Com_Ra_treasurer
+ * @author     Charlie Bigley <charlie@ramblers.tools>
+ * @copyright  Ramblers Tools
+ * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 // No direct access
 defined('_JEXEC') or die;
@@ -22,8 +25,8 @@ $user = Factory::getApplication()->getIdentity();
 $userId = $user->get('id');
 $listOrder = $this->state->get('list.ordering');
 $listDirn = $this->state->get('list.direction');
-$canCreate = $user->authorise('core.create', 'com_ra_treasurer') && file_exists(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'forms' . DIRECTORY_SEPARATOR . 'bookingform.xml');
-$canEdit = $user->authorise('core.edit', 'com_ra_treasurer') && file_exists(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'forms' . DIRECTORY_SEPARATOR . 'bookingform.xml');
+$canCreate = $user->authorise('core.create', 'com_ra_treasurer') && file_exists(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'forms' . DIRECTORY_SEPARATOR . 'paymentform.xml');
+$canEdit = $user->authorise('core.edit', 'com_ra_treasurer') && file_exists(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'forms' . DIRECTORY_SEPARATOR . 'paymentform.xml');
 $canCheckin = $user->authorise('core.manage', 'com_ra_treasurer');
 $canChange = $user->authorise('core.edit.state', 'com_ra_treasurer');
 $canDelete = $user->authorise('core.delete', 'com_ra_treasurer');
@@ -46,31 +49,41 @@ $wa->useStyle('com_ra_treasurer.list');
           }
           ?>
     <div class="table-responsive">
-        <table class="table table-striped" id="bookingList">
+        <table class="table table-striped" id="paymentList">
             <thead>
                 <tr>
+
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_EVENT_DATE', 'e.event_date', $listDirn, $listOrder); ?>
-                    </th>
-                    <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_EVENT_NAME', 'e.title', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Amount paid', 'a.amount_paid', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_CREATED', 'a.created', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Date paid', 'a.date_paid', $listDirn, $listOrder); ?>
                     </th>
+
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_MEMBER_NAME', 'p.preferred_name', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Event date', 'a.event_date', $listDirn, $listOrder); ?>
                     </th>
+
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Places', 'a.num_places', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Event name', 'a.event_name', $listDirn, $listOrder); ?>
                     </th>
+
+                    <th class=''>
+                        <?php echo HTMLHelper::_('grid.sort', 'Organiser', 'p.preferred_name', $listDirn, $listOrder); ?>
+                    </th>
+
                     <th class=''>
                         <?php echo HTMLHelper::_('grid.sort', 'ID', 'a.id', $listDirn, $listOrder); ?>
                     </th>
+
+                    <th class=''>
+                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_PAYMENTS_CREATED', 'a.created', $listDirn, $listOrder); ?>
+                    </th>
+
                     <?php if ($canEdit || $canDelete): ?>
                         <th class="center">
-                            <?php echo Text::_('COM_RA_TREASURER_BOOKINGS_ACTIONS'); ?>
+                            <?php echo Text::_('Action'); ?>
                         </th>
                     <?php endif; ?>
 
@@ -90,6 +103,13 @@ $wa->useStyle('com_ra_treasurer.list');
                     <?php $canEdit = $user->authorise('core.edit', 'com_ra_treasurer'); ?>
 
                     <tr class="row<?php echo $i % 2; ?>">
+
+                        <td>
+                            <?php echo $item->amount_paid; ?>
+                        </td>
+                        <td>
+                            <?php echo $item->date_paid; ?>
+                        </td>
                         <td>
                             <?php
                             $date = $item->event_date;
@@ -100,23 +120,19 @@ $wa->useStyle('com_ra_treasurer.list');
                             <?php echo $item->title; ?>
                         </td>
                         <td>
+                            <?php echo $item->preferred_name; ?>
+                        </td>
+                        <td>
+                            <?php echo $item->id; ?>
+                        </td>
+                        <td>
                             <?php
                             $date = $item->created;
                             echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
                             ?>
                         </td>
-                        <td>
-                            <?php echo $item->preferred_name; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->num_places; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->id; ?>
-                        </td>
                         <?php if ($canEdit || $canDelete): ?>
                             <td class="center">
-
                             </td>
                         <?php endif; ?>
 
@@ -125,7 +141,12 @@ $wa->useStyle('com_ra_treasurer.list');
             </tbody>
         </table>
     </div>
-
+    <?php if ($canCreate) : ?>
+        <a href="<?php echo Route::_('index.php?option=com_ra_treasurer&task=paymentform.edit&id=0', false, 0); ?>"
+           class="btn btn-success btn-small"><i
+                class="icon-plus"></i>
+            <?php echo Text::_('COM_RA_TREASURER_ADD_ITEM'); ?></a>
+        <?php endif; ?>
 
     <input type="hidden" name="task" value=""/>
     <input type="hidden" name="boxchecked" value="0"/>
