@@ -1,6 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
@@ -24,8 +24,9 @@ HTMLHelper::_('behavior.multiselect');
 
 // Import CSS
 $wa =  $this->document->getWebAssetManager();
-$wa->useStyle('com_ra_treasurer.admin')
-    ->useScript('com_ra_treasurer.admin');
+$wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
+$wa->useStyle('com_ra_tools.admin')
+    ->useScript('com_ra_tools.admin');
 
 $user      = Factory::getApplication()->getIdentity();
 $userId    = $user->get('id');
@@ -37,13 +38,13 @@ $canOrder  = $user->authorise('core.edit.state', 'com_ra_treasurer');
 
 if (!empty($saveOrder))
 {
-	$saveOrderingUrl = 'index.php?option=com_ra_treasurer&task=bookings.saveOrderAjax&tmpl=component&' . Session::getFormToken() . '=1';
+	$saveOrderingUrl = 'index.php?option=com_ra_treasurer&task=payments.saveOrderAjax&tmpl=component&' . Session::getFormToken() . '=1';
 	HTMLHelper::_('draggablelist.draggable');
 }
 
 ?>
 
-<form action="<?php echo Route::_('index.php?option=com_ra_treasurer&view=bookings'); ?>" method="post"
+<form action="<?php echo Route::_('index.php?option=com_ra_treasurer&view=payments'); ?>" method="post"
 	  name="adminForm" id="adminForm">
 	<div class="row">
 		<div class="col-md-12">
@@ -51,7 +52,7 @@ if (!empty($saveOrder))
 			<?php echo LayoutHelper::render('joomla.searchtools.default', array('view' => $this)); ?>
 
 				<div class="clearfix"></div>
-				<table class="table table-striped" id="bookingList">
+				<table class="table table-striped" id="paymentList">
 					<thead>
 					<tr>
 						<th class="w-1 text-center">
@@ -62,19 +63,22 @@ if (!empty($saveOrder))
 						
 						
 						<th class='left'>
-							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_BOOKINGS_CREATED', 'a.created', $listDirn, $listOrder); ?>
+							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_PAYMENTS_AMOUNT_PAID', 'a.amount_paid', $listDirn, $listOrder); ?>
 						</th>
 						<th class='left'>
-							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_BOOKINGS_EVENT_DATE', 'a.event_date', $listDirn, $listOrder); ?>
+							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_PAYMENTS_DATE_PAID', 'a.date_paid', $listDirn, $listOrder); ?>
 						</th>
 						<th class='left'>
-							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_BOOKINGS_EVENT_NAME', 'a.event_name', $listDirn, $listOrder); ?>
+							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_PAYMENTS_EVENT_DATE', 'a.event_date', $listDirn, $listOrder); ?>
 						</th>
 						<th class='left'>
-							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_BOOKINGS_MEMBER_NAME', 'a.member_name', $listDirn, $listOrder); ?>
+							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_PAYMENTS_EVENT_NAME', 'a.event_name', $listDirn, $listOrder); ?>
 						</th>
 						<th class='left'>
-							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_BOOKINGS_AMOUNT_DUE', 'a.amount_due', $listDirn, $listOrder); ?>
+							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_PAYMENTS_MEMBER_NAME', 'a.member_name', $listDirn, $listOrder); ?>
+						</th>
+						<th class='left'>
+							<?php echo HTMLHelper::_('searchtools.sort',  'COM_RA_TREASURER_PAYMENTS_CREATED', 'a.created', $listDirn, $listOrder); ?>
 						</th>
 						
 					<th scope="col" class="w-3 d-none d-lg-table-cell" >
@@ -105,10 +109,19 @@ if (!empty($saveOrder))
 							
 							
 							<td>
-								<?php
-									$date = $item->created;
-									echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
-								?>
+								<?php if (isset($item->checked_out) && $item->checked_out && ($canEdit || $canChange)) : ?>
+									<?php echo HTMLHelper::_('jgrid.checkedout', $i, $item->uEditor, $item->checked_out_time, 'payments.', $canCheckin); ?>
+								<?php endif; ?>
+								<?php if ($canEdit) : ?>
+									<a href="<?php echo Route::_('index.php?option=com_ra_treasurer&task=payment.edit&id='.(int) $item->id); ?>">
+									<?php echo $this->escape($item->amount_paid); ?>
+									</a>
+								<?php else : ?>
+												<?php echo $this->escape($item->amount_paid); ?>
+								<?php endif; ?>
+							</td>
+							<td>
+								<?php echo $item->date_paid; ?>
 							</td>
 							<td>
 								<?php
@@ -117,22 +130,16 @@ if (!empty($saveOrder))
 								?>
 							</td>
 							<td>
-								<?php if (isset($item->checked_out) && $item->checked_out && ($canEdit || $canChange)) : ?>
-									<?php echo HTMLHelper::_('jgrid.checkedout', $i, $item->uEditor, $item->checked_out_time, 'bookings.', $canCheckin); ?>
-								<?php endif; ?>
-								<?php if ($canEdit) : ?>
-									<a href="<?php echo Route::_('index.php?option=com_ra_treasurer&task=booking.edit&id='.(int) $item->id); ?>">
-									<?php echo $this->escape($item->event_name); ?>
-									</a>
-								<?php else : ?>
-												<?php echo $this->escape($item->event_name); ?>
-								<?php endif; ?>
+								<?php echo $item->event_name; ?>
 							</td>
 							<td>
 								<?php echo $item->member_name; ?>
 							</td>
 							<td>
-								<?php echo $item->amount_due; ?>
+								<?php
+									$date = $item->created;
+									echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
+								?>
 							</td>
 							
 							<td class="d-none d-lg-table-cell">

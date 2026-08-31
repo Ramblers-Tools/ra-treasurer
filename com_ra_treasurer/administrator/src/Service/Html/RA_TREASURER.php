@@ -1,10 +1,7 @@
 <?php
+
 /**
- * @version    CVS: 1.0.0
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 20/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\Service\Html;
@@ -22,32 +19,31 @@ use Joomla\Database\DatabaseDriver;
  *
  * @since  1.0.0
  */
-class RA_TREASURER
-{
-	use DatabaseAwareTrait;
+class RA_TREASURER {
 
-	/**
-	 * Public constructor.
-	 *
-	 * @param   DatabaseDriver  $db  The Joomla DB driver object for the site's database.
-	 */
-	public function __construct(DatabaseDriver $db)
-	{
-		$this->setDatabase($db);
-	}
+    use DatabaseAwareTrait;
 
-	public function toggle($value = 0, $view='', $field='', $i='')
-	{
-		$states = array(
-			0 => array('icon-unpublish', Text::_('Toggle'), ''),
-			1 => array('icon-publish', Text::_('Toggle'), '')
-		);
+    /**
+     * Public constructor.
+     *
+     * @param   DatabaseDriver  $db  The Joomla DB driver object for the site's database.
+     */
+    public function __construct(DatabaseDriver $db) {
+        $this->setDatabase($db);
+    }
 
-		$state  = ArrayHelper::getValue($states, (int) $value, $states[0]);
-		$text   = '<span aria-hidden="true" class="' . $state[0] . '"></span>';
-		$html   = '<a href="javascript:void(0);" class="tbody-icon ' . $state[2] . '"';
-		$html  .= 'onclick="return Joomla.toggleField(\'cb'.$i.'\',\'' . $view . '.toggle\',\'' . $field . '\')" title="' . Text::_($state[1]) . '">' . $text . '</a>';
+    public function toggle($value = 0, $view = '', $field = '', $i = '') {
+        $states = array(
+            0 => array('icon-unpublish', Text::_('Toggle'), ''),
+            1 => array('icon-publish', Text::_('Toggle'), '')
+        );
 
-		return $html;
-	}
+        $state = ArrayHelper::getValue($states, (int) $value, $states[0]);
+        $text = '<span aria-hidden="true" class="' . $state[0] . '"></span>';
+        $html = '<a href="javascript:void(0);" class="tbody-icon ' . $state[2] . '"';
+        $html .= 'onclick="return Joomla.toggleField(\'cb' . $i . '\',\'' . $view . '.toggle\',\'' . $field . '\')" title="' . Text::_($state[1]) . '">' . $text . '</a>';
+
+        return $html;
+    }
+
 }

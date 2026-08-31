@@ -3,6 +3,7 @@
 /**
  * 20/08/26 created by component-creator
  * 25/08/26 CB rewrote select
+ * 20/08/26 CB set state=1
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
@@ -18,7 +19,6 @@ use \Joomla\CMS\Helper\TagsHelper;
 use \Joomla\CMS\Layout\FileLayout;
 use \Joomla\Database\ParameterType;
 use \Joomla\Utilities\ArrayHelper;
-use \Ramblers\Component\Ra_treasurer\Site\Helper\Ra_treasurerHelper;
 use \Joomla\Database\DatabaseInterface;
 
 /**
@@ -39,12 +39,12 @@ class BookingsModel extends ListModel {
     public function __construct($config = array()) {
         if (empty($config['filter_fields'])) {
             $config['filter_fields'] = array(
-                'id', 'a.id',
-                'e.event_date',
-                'e.title',
-                'a.created',
-                'p.preferred_name',
-                'a.num_places',
+                'event_date', 'e.event_date',
+                'title', 'e.title',
+                'created', 'a.created',
+                'member_name', 'p.preferred_name',
+                'num_places', 'a.num_places',
+                'event_id', 'a.event_id',
             );
         }
 
@@ -127,7 +127,8 @@ class BookingsModel extends ListModel {
         $query->select('p.preferred_name');
         $query->join('INNER', '#__ra_events AS e ON e.id=a.event_id');
         $query->join('INNER', '#__ra_profiles AS p ON p.id=a.user_id');
-
+        $query->where('a.amount_paid IS NULL');
+        $query->where('e.api_site_id IS NULL');
         if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
             $query->where('a.state = 1');
         } else {
@@ -154,7 +155,9 @@ class BookingsModel extends ListModel {
         if ($orderCol && $orderDirn) {
             $query->order($db->escape($orderCol . ' ' . $orderDirn));
         }
-
+        if (JDEBUG) {
+            Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');
+        }
         return $query;
     }
 
@@ -167,6 +170,31 @@ class BookingsModel extends ListModel {
         $items = parent::getItems();
 
         return $items;
+    }
+
+    public function recordPayment(
+            int $bookingId,
+            string $datePaid,
+            string $amountPaid,
+            int $createdBy,
+            string $created
+    ): bool {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $query = $db->getQuery(true)
+                ->update($db->quoteName('#__ra_bookings'))
+                ->set($db->quoteName('date_paid') . ' = ' . $db->quote($datePaid))
+                ->set($db->quoteName('amount_paid') . ' = ' . $db->quote($amountPaid))
+                ->set($db->quoteName('payment_created_by') . ' = ' . $createdBy)
+                ->set($db->quoteName('payment_created') . ' = ' . $db->quote($created))
+                ->set($db->quoteName('state') . '=1')
+                ->where($db->quoteName('id') . ' = ' . $bookingId)
+                ->where($db->quoteName('amount_paid') . ' IS NULL');
+        if (JDEBUG) {
+            Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');
+        }
+        $db->setQuery($query)->execute();
+
+        return $db->getAffectedRows() === 1;
     }
 
     /**
@@ -188,7 +216,7 @@ class BookingsModel extends ListModel {
         }
 
         if ($error_dateformat) {
-            $app->enqueueMessage(Text::_("COM_RA_TREASURER_SEARCH_FILTER_DATE_FORMAT"), "warning");
+            $app->enqueueMessage(Text::_("Incorrect data format"), "warning");
             $app->setUserState($this->context . '.filter', $filters);
         }
 

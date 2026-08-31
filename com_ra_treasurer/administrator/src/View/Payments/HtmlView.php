@@ -1,13 +1,13 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-namespace Ramblers\Component\Ra_treasurer\Administrator\View\Bookings;
+namespace Ramblers\Component\Ra_treasurer\Administrator\View\Payments;
 // No direct access
 defined('_JEXEC') or die;
 
@@ -20,9 +20,9 @@ use \Joomla\Component\Content\Administrator\Extension\ContentComponent;
 use \Joomla\CMS\Form\Form;
 use \Joomla\CMS\HTML\Helpers\Sidebar;
 /**
- * View class for a list of Bookings.
+ * View class for a list of Payments.
  *
- * @since  1.0.0
+ * @since  1.0.2
  */
 class HtmlView extends BaseHtmlView
 {
@@ -66,25 +66,25 @@ class HtmlView extends BaseHtmlView
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	protected function addToolbar()
 	{
 		$state = $this->get('State');
 		$canDo = Ra_treasurerHelper::getActions();
 
-		ToolbarHelper::title(Text::_('COM_RA_TREASURER_TITLE_BOOKINGS'), "generic");
+		ToolbarHelper::title(Text::_('COM_RA_TREASURER_TITLE_PAYMENTS'), "generic");
 
 		$toolbar = Toolbar::getInstance('toolbar');
 
 		// Check if the form exists before showing the add/edit buttons
-		$formPath = JPATH_COMPONENT_ADMINISTRATOR . '/src/View/Bookings';
+		$formPath = JPATH_COMPONENT_ADMINISTRATOR . '/src/View/Payments';
 
 		if (file_exists($formPath))
 		{
 			if ($canDo->get('core.create'))
 			{
-				$toolbar->addNew('booking.add');
+				$toolbar->addNew('payment.add');
 			}
 		}
 
@@ -101,14 +101,14 @@ class HtmlView extends BaseHtmlView
 
 			if (isset($this->items[0]->state))
 			{
-				$childBar->publish('bookings.publish')->listCheck(true);
-				$childBar->unpublish('bookings.unpublish')->listCheck(true);
-				$childBar->archive('bookings.archive')->listCheck(true);
+				$childBar->publish('payments.publish')->listCheck(true);
+				$childBar->unpublish('payments.unpublish')->listCheck(true);
+				$childBar->archive('payments.archive')->listCheck(true);
 			}
 			elseif (isset($this->items[0]))
 			{
 				// If this component does not use state then show a direct delete button as we can not trash
-				$toolbar->delete('bookings.delete')
+				$toolbar->delete('payments.delete')
 				->text('JTOOLBAR_EMPTY_TRASH')
 				->message('JGLOBAL_CONFIRM_DELETE')
 				->listCheck(true);
@@ -117,17 +117,17 @@ class HtmlView extends BaseHtmlView
 			$childBar->standardButton('duplicate')
 				->text('JTOOLBAR_DUPLICATE')
 				->icon('fas fa-copy')
-				->task('bookings.duplicate')
+				->task('payments.duplicate')
 				->listCheck(true);
 
 			if (isset($this->items[0]->checked_out))
 			{
-				$childBar->checkin('bookings.checkin')->listCheck(true);
+				$childBar->checkin('payments.checkin')->listCheck(true);
 			}
 
 			if (isset($this->items[0]->state))
 			{
-				$childBar->trash('bookings.trash')->listCheck(true);
+				$childBar->trash('payments.trash')->listCheck(true);
 			}
 		}
 
@@ -139,7 +139,7 @@ class HtmlView extends BaseHtmlView
 
 			if ($this->state->get('filter.state') == ContentComponent::CONDITION_TRASHED && $canDo->get('core.delete'))
 			{
-				$toolbar->delete('bookings.delete')
+				$toolbar->delete('payments.delete')
 					->text('JTOOLBAR_EMPTY_TRASH')
 					->message('JGLOBAL_CONFIRM_DELETE')
 					->listCheck(true);
@@ -152,7 +152,7 @@ class HtmlView extends BaseHtmlView
 		}
 
 		// Set sidebar action
-		Sidebar::setAction('index.php?option=com_ra_treasurer&view=bookings');
+		Sidebar::setAction('index.php?option=com_ra_treasurer&view=payments');
 	}
 	
 	/**
@@ -164,11 +164,12 @@ class HtmlView extends BaseHtmlView
 	{
 		return array(
 			'a.`id`' => Text::_('JGRID_HEADING_ID'),
-			'a.`member_name`' => Text::_('COM_RA_TREASURER_BOOKINGS_MEMBER_NAME'),
-			'a.`event_name`' => Text::_('COM_RA_TREASURER_BOOKINGS_EVENT_NAME'),
-			'a.`amount_due`' => Text::_('COM_RA_TREASURER_BOOKINGS_AMOUNT_DUE'),
-			'a.`event_date`' => Text::_('COM_RA_TREASURER_BOOKINGS_EVENT_DATE'),
-			'a.`created`' => Text::_('COM_RA_TREASURER_BOOKINGS_CREATED'),
+			'a.`member_name`' => Text::_('COM_RA_TREASURER_PAYMENTS_MEMBER_NAME'),
+			'a.`event_name`' => Text::_('COM_RA_TREASURER_PAYMENTS_EVENT_NAME'),
+			'a.`amount_paid`' => Text::_('COM_RA_TREASURER_PAYMENTS_AMOUNT_PAID'),
+			'a.`event_date`' => Text::_('COM_RA_TREASURER_PAYMENTS_EVENT_DATE'),
+			'a.`created`' => Text::_('COM_RA_TREASURER_PAYMENTS_CREATED'),
+			'a.`date_paid`' => Text::_('COM_RA_TREASURER_PAYMENTS_DATE_PAID'),
 		);
 	}
 

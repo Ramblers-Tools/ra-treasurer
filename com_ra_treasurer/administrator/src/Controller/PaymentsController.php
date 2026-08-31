@@ -1,6 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
@@ -21,14 +21,14 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Utilities\ArrayHelper;
 
 /**
- * Bookings list controller class.
+ * Payments list controller class.
  *
- * @since  1.0.0
+ * @since  1.0.2
  */
-class BookingsController extends AdminController
+class PaymentsController extends AdminController
 {
 	/**
-	 * Method to clone existing Bookings
+	 * Method to clone existing Payments
 	 *
 	 * @return  void
 	 *
@@ -59,7 +59,7 @@ class BookingsController extends AdminController
 			Factory::getApplication()->enqueueMessage($e->getMessage(), 'warning');
 		}
 
-		$this->setRedirect('index.php?option=com_ra_treasurer&view=bookings');
+		$this->setRedirect('index.php?option=com_ra_treasurer&view=payments');
 	}
 
 	/**
@@ -71,9 +71,9 @@ class BookingsController extends AdminController
 	 *
 	 * @return  object	The Model
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
-	public function getModel($name = 'Booking', $prefix = 'Administrator', $config = array())
+	public function getModel($name = 'Payment', $prefix = 'Administrator', $config = array())
 	{
 		return parent::getModel($name, $prefix, array('ignore_request' => true));
 	}
@@ -85,7 +85,7 @@ class BookingsController extends AdminController
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 *
 	 * @throws  Exception
 	 */

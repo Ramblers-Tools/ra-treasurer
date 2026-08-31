@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
@@ -25,21 +26,21 @@ use Joomla\Utilities\ArrayHelper;
  *
  * @since  1.0.2
  */
-class PaymentsController extends FormController
-{
-	/**
-	 * Proxy for getModel.
-	 *
-	 * @param   string  $name    The model name. Optional.
-	 * @param   string  $prefix  The class prefix. Optional
-	 * @param   array   $config  Configuration array for model. Optional
-	 *
-	 * @return  object	The model
-	 *
-	 * @since   1.0.2
-	 */
-	public function getModel($name = 'Payments', $prefix = 'Site', $config = array())
-	{
-		return parent::getModel($name, $prefix, array('ignore_request' => true));
-	}
+class PaymentsController extends FormController {
+
+    /**
+     * Proxy for getModel.
+     *
+     * @param   string  $name    The model name. Optional.
+     * @param   string  $prefix  The class prefix. Optional
+     * @param   array   $config  Configuration array for model. Optional
+     *
+     * @return  object	The model
+     *
+     * @since   1.0.2
+     */
+    public function getModel($name = 'Payments', $prefix = 'Site', $config = array()) {
+        return parent::getModel($name, $prefix, array('ignore_request' => true));
+    }
+
 }

@@ -33,7 +33,9 @@ $canDelete = $user->authorise('core.delete', 'com_ra_treasurer');
 
 // Import CSS
 $wa = $this->document->getWebAssetManager();
-$wa->useStyle('com_ra_treasurer.list');
+$wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
+$wa->useStyle('com_ra_tools.list');
+$target_info = 'index.php?option=com_ra_treasurer&task=events.showPayments&id=';
 ?>
 
 <?php if ($this->params->get('show_page_heading')) : ?>
@@ -58,29 +60,28 @@ $wa->useStyle('com_ra_treasurer.list');
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Title', 'a.title', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Event title', 'a.title', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Organiser', 'a.organiser', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Organiser', 'p.preferred_name', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Total places', 'a.tot_places', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Total places', 'a.max_bookings', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Total paid', 'a.tot_paid', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Confirmed places', 'num_confirmed', $listDirn, $listOrder); ?>
                     </th>
-
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'ID', 'a.id', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Total paid', 'total_paid', $listDirn, $listOrder); ?>
                     </th>
 
 
                     <?php if ($canEdit || $canDelete): ?>
                         <th class="center">
-                            <?php echo Text::_('Actions'); ?>
+                            <?php echo Text::_('View bookings'); ?>
                         </th>
                     <?php endif; ?>
 
@@ -101,29 +102,23 @@ $wa->useStyle('com_ra_treasurer.list');
 
                     <tr class="row<?php echo $i % 2; ?>">
 
-                        <td>
-                            <?php
-                            $date = $item->event_date;
-                            echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
-                            ?>
-                        </td>
-                        <td>
-                            <?php echo $item->title; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->organiser; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->tot_places; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->tot_paid; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->id; ?>
-                        </td>
+                        <?php
+                        echo '<td>';
+
+                        $date = $item->event_date;
+                        echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
+                        echo '</td>';
+                        echo '<td>' . $item->title . '</td>';
+                        echo '<td>' . $item->preferred_name . '</td>';
+                        echo '<td>' . $item->max_bookings . '</td>';
+                        echo '<td>' . $item->num_confirmed . '</td>';
+                        echo '<td>' . $item->total_paid . '</td>';
+                        ?>
+
+
                         <?php if ($canEdit || $canDelete): ?>
                             <td class="center">
+                                <?php echo $this->toolsHelper->imageButton('I', $target_info . $item->id); ?>
                             </td>
                         <?php endif; ?>
 

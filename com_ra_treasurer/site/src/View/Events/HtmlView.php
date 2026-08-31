@@ -6,6 +6,7 @@
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 27/08/26 CB added ToolsHelper
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\View\Events;
@@ -15,7 +16,7 @@ defined('_JEXEC') or die;
 use \Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use \Joomla\CMS\Factory;
 use \Joomla\CMS\Language\Text;
-
+use \Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
 /**
  * View class for a list of Ra_treasurer.
  *
@@ -30,6 +31,7 @@ class HtmlView extends BaseHtmlView
 	protected $state;
 
 	protected $params;
+	protected $toolsHelper;
 
 	/**
 	 * Display the view
@@ -50,6 +52,7 @@ class HtmlView extends BaseHtmlView
 		$this->params = $app->getParams('com_ra_treasurer');
 		$this->filterForm = $this->get('FilterForm');
 		$this->activeFilters = $this->get('ActiveFilters');
+		$this->toolsHelper = new ToolsHelper;
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors')))
@@ -118,7 +121,6 @@ class HtmlView extends BaseHtmlView
 		{
 			$this->document->setMetadata('robots', $this->params->get('robots'));
 		}
-
 		
 	}
 
@@ -132,5 +134,19 @@ class HtmlView extends BaseHtmlView
 	public function getState($state)
 	{
 		return isset($this->state->{$state}) ? $this->state->{$state} : false;
+	}
+
+	public function numConfirmed($event_id) {
+		$sql = 'SELECT COUNT(*) FROM #__ra_bookings AS b ';
+		$sql .= 'INNER JOIN #__ra_events AS a ON a.id = b.event_id ';
+		$sql .= 'WHERE b.state = 1 AND a.id = ' . (int) $event_id;
+		return $this->toolsHelper->getValue($sql);
+	}
+
+	public function totPaid($event_id) {
+		$sql = 'SELECT SUM(b.amount_paid) FROM #__ra_bookings AS b ';
+		$sql .= 'INNER JOIN #__ra_events AS a ON a.id = b.event_id ';
+		$sql .= 'WHERE b.state = 1 AND a.id = ' . (int) $event_id;
+		return $this->toolsHelper->getValue($sql);
 	}
 }

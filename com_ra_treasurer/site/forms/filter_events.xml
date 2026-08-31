@@ -2,7 +2,7 @@
 <form>
     <fields name="filter">
         <field name="search" type="text" hint="COM_RA_TREASURER_SEARCH_FILTER_SUBMIT"
-               label="COM_USERS_FILTER_SEARCH_DESC"
+               label="COM_RA_TREASURER_EVENTS_SEARCH_FILTER_DESC"
                class="js-stools-search-string" />
 
         
@@ -15,10 +15,21 @@
                label="COM_RA_TREASURER_LIST_FULL_ORDERING"
                description="COM_RA_TREASURER_LIST_FULL_ORDERING_DESC"
                onchange="this.form.submit();"
-               default="a.id DESC"
+               default="a.event_date DESC"
         >
             <option value="">JGLOBAL_SORT_BY</option>
-            <option value="a.id ASC">COM_RA_TREASURER_ID_ASC</option><option value="a.id DESC">COM_RA_TREASURER_ID_DESC</option><option value="a.organiser ASC">COM_RA_TREASURER_ORGANISER_ASC</option><option value="a.organiser DESC">COM_RA_TREASURER_ORGANISER_DESC</option><option value="a.title ASC">COM_RA_TREASURER_TITLE_ASC</option><option value="a.title DESC">COM_RA_TREASURER_TITLE_DESC</option><option value="a.tot_paid ASC">COM_RA_TREASURER_TOT_PAID_ASC</option><option value="a.tot_paid DESC">COM_RA_TREASURER_TOT_PAID_DESC</option><option value="a.event_date ASC">COM_RA_TREASURER_EVENT_DATE_ASC</option><option value="a.event_date DESC">COM_RA_TREASURER_EVENT_DATE_DESC</option><option value="a.created ASC">COM_RA_TREASURER_CREATED_ASC</option><option value="a.created DESC">COM_RA_TREASURER_CREATED_DESC</option><option value="a.tot_places ASC">COM_RA_TREASURER_TOT_PLACES_ASC</option><option value="a.tot_places DESC">COM_RA_TREASURER_TOT_PLACES_DESC</option>
+            <option value="a.event_date ASC">Event date ASC</option>
+            <option value="a.event_date DESC">Event date DESC</option>
+            <option value="a.title ASC">Event title ASC</option>
+            <option value="a.title DESC">Event title DESC</option>
+            <option value="p.preferred_name ASC">Organiser ASC</option>
+            <option value="p.preferred_name DESC">Organiser DESC</option>
+            <option value="a.max_bookings ASC">Total places ASC</option>
+            <option value="a.max_bookings DESC">Total places DESC</option>
+            <option value="num_confirmed ASC">Confirmed places ASC</option>
+            <option value="num_confirmed DESC">Confirmed places DESC</option>
+            <option value="total_paid ASC">Total paid ASC</option>
+            <option value="total_paid DESC">Total paid DESC</option>
 
         </field>
 

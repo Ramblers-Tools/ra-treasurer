@@ -22,15 +22,18 @@ $user = Factory::getApplication()->getIdentity();
 $userId = $user->get('id');
 $listOrder = $this->state->get('list.ordering');
 $listDirn = $this->state->get('list.direction');
-$canCreate = $user->authorise('core.create', 'com_ra_treasurer') && file_exists(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'forms' . DIRECTORY_SEPARATOR . 'bookingform.xml');
 $canEdit = $user->authorise('core.edit', 'com_ra_treasurer') && file_exists(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'forms' . DIRECTORY_SEPARATOR . 'bookingform.xml');
 $canCheckin = $user->authorise('core.manage', 'com_ra_treasurer');
 $canChange = $user->authorise('core.edit.state', 'com_ra_treasurer');
 $canDelete = $user->authorise('core.delete', 'com_ra_treasurer');
+$canRecordPayment = !$user->guest && $user->authorise('core.create', 'com_ra_treasurer');
+$today = Factory::getDate('now', Factory::getConfig()->get('offset'))->format('Y-m-d');
+$itemId = Factory::getApplication()->input->getInt('Itemid');
 
 // Import CSS
 $wa = $this->document->getWebAssetManager();
-$wa->useStyle('com_ra_treasurer.list');
+$wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
+$wa->useStyle('com_ra_tools.list');
 ?>
 
 <?php if ($this->params->get('show_page_heading')) : ?>
@@ -53,24 +56,21 @@ $wa->useStyle('com_ra_treasurer.list');
                         <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_EVENT_DATE', 'e.event_date', $listDirn, $listOrder); ?>
                     </th>
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_EVENT_NAME', 'e.title', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Event title', 'e.title', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_CREATED', 'a.created', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Booking date', 'a.created', $listDirn, $listOrder); ?>
                     </th>
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_BOOKINGS_MEMBER_NAME', 'p.preferred_name', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Member', 'p.preferred_name', $listDirn, $listOrder); ?>
                     </th>
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Places', 'a.num_places', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Num places', 'a.num_places', $listDirn, $listOrder); ?>
                     </th>
-                    <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'ID', 'a.id', $listDirn, $listOrder); ?>
-                    </th>
-                    <?php if ($canEdit || $canDelete): ?>
+                    <?php if ($canRecordPayment || $canEdit || $canDelete): ?>
                         <th class="center">
-                            <?php echo Text::_('COM_RA_TREASURER_BOOKINGS_ACTIONS'); ?>
+                            <?php echo Text::_('Action'); ?>
                         </th>
                     <?php endif; ?>
 
@@ -87,8 +87,6 @@ $wa->useStyle('com_ra_treasurer.list');
             </tfoot>
             <tbody>
                 <?php foreach ($this->items as $i => $item) : ?>
-                    <?php $canEdit = $user->authorise('core.edit', 'com_ra_treasurer'); ?>
-
                     <tr class="row<?php echo $i % 2; ?>">
                         <td>
                             <?php
@@ -111,12 +109,19 @@ $wa->useStyle('com_ra_treasurer.list');
                         <td>
                             <?php echo $item->num_places; ?>
                         </td>
-                        <td>
-                            <?php echo $item->id; ?>
-                        </td>
-                        <?php if ($canEdit || $canDelete): ?>
+                        <?php if ($canRecordPayment || $canEdit || $canDelete): ?>
                             <td class="center">
-
+                                <?php if ($canRecordPayment) : ?>
+                                    <button type="button"
+                                            class="btn btn-success btn-sm record-payment-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#recordPaymentModal"
+                                            data-booking-id="<?php echo (int) $item->id; ?>"
+                                            data-booking-label="<?php echo $this->escape($item->preferred_name . ' — ' . $item->title); ?>"
+                                            data-amount-due="<?php echo $this->escape((string) ($item->amount_due ?? '')); ?>">
+                                                <?php echo Text::_('Record Payment'); ?>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         <?php endif; ?>
 
@@ -133,6 +138,78 @@ $wa->useStyle('com_ra_treasurer.list');
     <input type="hidden" name="filter_order_Dir" value=""/>
     <?php echo HTMLHelper::_('form.token'); ?>
 </form>
+
+<?php if ($canRecordPayment) : ?>
+    <?php
+    $modalBody = '<p id="record-payment-booking" class="fw-semibold"></p>'
+            . '<div class="mb-3">'
+            . '<label for="record-payment-date" class="form-label">'
+            . Text::_('Date paid')
+            . '</label>'
+            . '<input type="date" id="record-payment-date" name="date_paid" '
+            . 'class="form-control" value="' . $today . '" max="' . $today . '" required>'
+            . '</div>'
+            . '<div class="mb-3">'
+            . '<label for="record-payment-amount" class="form-label">'
+            . Text::_('Amount paid')
+            . '</label>'
+            . '<input type="number" id="record-payment-amount" name="amount_paid" '
+            . 'class="form-control" min="0.01" max="99999.99" step="0.01" '
+            . 'inputmode="decimal" required>'
+            . '</div>';
+
+    $modalFooter = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">'
+            . Text::_('JCANCEL')
+            . '</button>'
+            . '<button type="submit" form="record-payment-form" class="btn btn-success">'
+            . Text::_('Confirm')
+            . '</button>';
+    ?>
+    <form action="<?php echo Route::_('index.php?option=com_ra_treasurer&task=bookings.recordPayment'); ?>"
+          method="post" id="record-payment-form" class="form-validate">
+              <?php
+              echo HTMLHelper::_(
+                      'bootstrap.renderModal',
+                      'recordPaymentModal',
+                      array(
+                          'title' => Text::_('Record Payment'),
+                          'footer' => $modalFooter,
+                      ),
+                      $modalBody
+              );
+              ?>
+        <input type="hidden" name="task" value="bookings.recordPayment">
+        <input type="hidden" name="booking_id" id="record-payment-booking-id" value="">
+        <?php if ($itemId > 0) : ?>
+            <input type="hidden" name="Itemid" value="<?php echo $itemId; ?>">
+        <?php endif; ?>
+        <?php echo HTMLHelper::_('form.token'); ?>
+    </form>
+    <?php
+    $wa->addInlineScript(
+            "document.addEventListener('DOMContentLoaded', function () {
+                const modal = document.getElementById('recordPaymentModal');
+                if (!modal) {
+                    return;
+                }
+
+                modal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    if (!button) {
+                        return;
+                    }
+
+                    document.getElementById('record-payment-booking-id').value = button.dataset.bookingId || '';
+                    document.getElementById('record-payment-booking').textContent = button.dataset.bookingLabel || '';
+
+                    const amount = button.dataset.amountDue || '';
+                    document.getElementById('record-payment-amount').value = /^\\d+(?:\\.\\d{1,2})?$/.test(amount) ? amount : '';
+                    document.getElementById('record-payment-date').value = '" . $today . "';
+                });
+            });"
+    );
+    ?>
+<?php endif; ?>
 
 <?php
 if ($canDelete) {

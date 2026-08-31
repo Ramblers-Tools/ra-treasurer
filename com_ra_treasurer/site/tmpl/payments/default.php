@@ -33,7 +33,8 @@ $canDelete = $user->authorise('core.delete', 'com_ra_treasurer');
 
 // Import CSS
 $wa = $this->document->getWebAssetManager();
-$wa->useStyle('com_ra_treasurer.list');
+$wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
+$wa->useStyle('com_ra_tools.list');
 ?>
 
 <?php if ($this->params->get('show_page_heading')) : ?>
@@ -54,38 +55,30 @@ $wa->useStyle('com_ra_treasurer.list');
                 <tr>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Amount paid', 'a.amount_paid', $listDirn, $listOrder); ?>
-                    </th>
-
-                    <th class=''>
                         <?php echo HTMLHelper::_('grid.sort', 'Date paid', 'a.date_paid', $listDirn, $listOrder); ?>
                     </th>
-
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Event date', 'a.event_date', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Payment created', 'a.payment_created', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Event name', 'a.event_name', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Amount paid', 'a.amount_paid', $listDirn, $listOrder); ?>
+                    </th>
+                    <th class=''>
+                        <?php echo HTMLHelper::_('grid.sort', 'Event date', 'e.event_date', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Organiser', 'p.preferred_name', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Event title', 'e.title', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'ID', 'a.id', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'member', 'p.preferred_name', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'COM_RA_TREASURER_PAYMENTS_CREATED', 'a.created', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('grid.sort', 'Ref ID', 'a.id', $listDirn, $listOrder); ?>
                     </th>
-
-                    <?php if ($canEdit || $canDelete): ?>
-                        <th class="center">
-                            <?php echo Text::_('Action'); ?>
-                        </th>
-                    <?php endif; ?>
 
                 </tr>
             </thead>
@@ -103,12 +96,18 @@ $wa->useStyle('com_ra_treasurer.list');
                     <?php $canEdit = $user->authorise('core.edit', 'com_ra_treasurer'); ?>
 
                     <tr class="row<?php echo $i % 2; ?>">
+                        <td>
+                            <?php echo $item->date_paid; ?>
+                        </td>
+                        <td>
+                            <?php
+                            $date = $item->payment_created;
+                            echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC2')) : '-';
+                            ?>
+                        </td>
 
                         <td>
                             <?php echo $item->amount_paid; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->date_paid; ?>
                         </td>
                         <td>
                             <?php
@@ -125,16 +124,6 @@ $wa->useStyle('com_ra_treasurer.list');
                         <td>
                             <?php echo $item->id; ?>
                         </td>
-                        <td>
-                            <?php
-                            $date = $item->created;
-                            echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
-                            ?>
-                        </td>
-                        <?php if ($canEdit || $canDelete): ?>
-                            <td class="center">
-                            </td>
-                        <?php endif; ?>
 
                     </tr>
                 <?php endforeach; ?>

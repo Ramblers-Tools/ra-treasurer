@@ -21,7 +21,6 @@ use \Joomla\CMS\Helper\TagsHelper;
 use \Joomla\CMS\Layout\FileLayout;
 use \Joomla\Database\ParameterType;
 use \Joomla\Utilities\ArrayHelper;
-use \Ramblers\Component\Ra_treasurer\Site\Helper\Ra_treasurerHelper;
 use \Joomla\Database\DatabaseInterface;
 
 /**
@@ -43,17 +42,12 @@ class EventsModel extends ListModel {
         if (empty($config['filter_fields'])) {
             $config['filter_fields'] = array(
                 'id', 'a.id',
-                'state', 'a.state',
-                'ordering', 'a.ordering',
-                'created_by', 'a.created_by',
-                'modified_by', 'a.modified_by',
-                'organiser', 'a.organiser',
+                'organiser', 'p.preferred_name',
                 'title', 'a.title',
-                'tot_paid', 'a.tot_paid',
                 'event_date', 'a.event_date',
-                'created', 'a.created',
-                'modified', 'a.modified',
-                'tot_places', 'a.tot_places',
+                'max_bookings', 'a.max_bookings',
+                'num_confirmed',
+                'total_paid',
             );
         }
 
@@ -132,10 +126,16 @@ class EventsModel extends ListModel {
         );
 
         $query->from('`#__ra_events` AS a');
-        $query->where('bookable="Y"');
+        $query->where('bookable="1"');
+        $query->where('api_site_id IS NULL');
         // Join over the users for the checked out user.
         $query->select('p.preferred_name ');
-        $query->join('LEFT', '#__ra_profiles AS p ON p.id=a.contact_id');
+        $query->select('(SELECT COUNT(*) FROM #__ra_bookings AS b'
+                . ' WHERE b.state = 1 AND b.event_id = a.id) AS num_confirmed');
+        $query->select('(SELECT SUM(b.amount_paid) FROM #__ra_bookings AS b'
+                . ' WHERE b.state = 1 AND b.event_id = a.id) AS total_paid');
+        $query->join('LEFT', '#__contact_details AS c ON c.id=a.contact_id');
+        $query->join('LEFT', '#__ra_profiles AS p ON p.id=c.user_id');
 
         if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
             $query->where('a.state = 1');
@@ -151,11 +151,9 @@ class EventsModel extends ListModel {
                 $query->where('a.id = ' . (int) substr($search, 3));
             } else {
                 $search = $db->Quote('%' . $db->escape($search, true) . '%');
-                $query->where('( a.organiser LIKE ' . $search . '  OR  a.title LIKE ' . $search . ' )');
+                $query->where('(p.preferred_name LIKE ' . $search . ' OR a.title LIKE ' . $search . ')');
             }
         }
-
-
 
 
         // Add the list ordering clause.
@@ -165,7 +163,9 @@ class EventsModel extends ListModel {
         if ($orderCol && $orderDirn) {
             $query->order($db->escape($orderCol . ' ' . $orderDirn));
         }
-
+        if (JDEBUG) {
+            Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');
+        }
         return $query;
     }
 

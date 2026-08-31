@@ -1,6 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
@@ -24,32 +24,32 @@ use Joomla\CMS\Event\AbstractEvent;
 use \Joomla\Database\DatabaseInterface;
 
 /**
- * Booking model.
+ * Payment model.
  *
- * @since  1.0.0
+ * @since  1.0.2
  */
-class BookingModel extends AdminModel
+class PaymentModel extends AdminModel
 {
 	use VersionableModelTrait;
 
 	/**
 	 * @var    string  The prefix to use with controller messages.
 	 *
-	 * @since  1.0.0
+	 * @since  1.0.2
 	 */
 	protected $text_prefix = 'COM_RA_TREASURER';
 
 	/**
 	 * @var    string  Alias to manage history control
 	 *
-	 * @since  1.0.0
+	 * @since  1.0.2
 	 */
-	public $typeAlias = 'com_ra_treasurer.booking';
+	public $typeAlias = 'com_ra_treasurer.payment';
 
 	/**
 	 * @var    null  Item data
 	 *
-	 * @since  1.0.0
+	 * @since  1.0.2
 	 */
 	protected $item = null;
 
@@ -65,9 +65,9 @@ class BookingModel extends AdminModel
 	 *
 	 * @return  Table    A database object
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
-	public function getTable($type = 'Booking', $prefix = 'Administrator', $config = array())
+	public function getTable($type = 'Payment', $prefix = 'Administrator', $config = array())
 	{
 		return parent::getTable($type, $prefix, $config);
 	}
@@ -80,7 +80,7 @@ class BookingModel extends AdminModel
 	 *
 	 * @return  \JForm|boolean  A \JForm object on success, false on failure
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	public function getForm($data = array(), $loadData = true)
 	{
@@ -89,8 +89,8 @@ class BookingModel extends AdminModel
 
 		// Get the form.
 		$form = $this->loadForm(
-								'com_ra_treasurer.booking', 
-								'booking',
+								'com_ra_treasurer.payment', 
+								'payment',
 								array(
 									'control' => 'jform',
 									'load_data' => $loadData 
@@ -114,12 +114,12 @@ class BookingModel extends AdminModel
 	 *
 	 * @return  mixed  The data for the form.
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	protected function loadFormData()
 	{
 		// Check the session for previously entered form data.
-		$data = Factory::getApplication()->getUserState('com_ra_treasurer.edit.booking.data', array());
+		$data = Factory::getApplication()->getUserState('com_ra_treasurer.edit.payment.data', array());
 
 		if (empty($data))
 		{
@@ -142,7 +142,7 @@ class BookingModel extends AdminModel
 	 *
 	 * @return  mixed    Object on success, false on failure.
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	public function getItem($pk = null)
 	{
@@ -162,7 +162,7 @@ class BookingModel extends AdminModel
 	}
 
 	/**
-	 * Method to duplicate an Booking
+	 * Method to duplicate an Payment
 	 *
 	 * @param   array  &$pks  An array of primary key IDs.
 	 *
@@ -259,7 +259,7 @@ class BookingModel extends AdminModel
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	protected function prepareTable($table)
 	{
@@ -271,7 +271,7 @@ class BookingModel extends AdminModel
 			if (@$table->ordering === '')
 			{
 				$db = Factory::getContainer()->get(DatabaseInterface::class);
-				$db->setQuery('SELECT MAX(ordering) FROM #__ra_bookings');
+				$db->setQuery('SELECT MAX(ordering) FROM #__ra_payments');
 				$max             = $db->loadResult();
 				$table->ordering = $max + 1;
 			}

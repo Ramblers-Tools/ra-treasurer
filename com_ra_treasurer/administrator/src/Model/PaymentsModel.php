@@ -1,6 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
@@ -22,11 +22,11 @@ use Ramblers\Component\Ra_treasurer\Administrator\Helper\Ra_treasurerHelper;
 use \Joomla\Database\DatabaseInterface;
 
 /**
- * Methods supporting a list of Bookings records.
+ * Methods supporting a list of Payments records.
  *
- * @since  1.0.0
+ * @since  1.0.2
  */
-class BookingsModel extends ListModel
+class PaymentsModel extends ListModel
 {
 	/**
 	* Constructor.
@@ -48,10 +48,11 @@ class BookingsModel extends ListModel
 				'modified_by', 'a.modified_by',
 				'member_name', 'a.member_name',
 				'event_name', 'a.event_name',
-				'amount_due', 'a.amount_due',
+				'amount_paid', 'a.amount_paid',
 				'event_date', 'a.event_date',
 				'created', 'a.created',
 				'modified', 'a.modified',
+				'date_paid', 'a.date_paid',
 			);
 		}
 
@@ -80,7 +81,7 @@ class BookingsModel extends ListModel
 	protected function populateState($ordering = null, $direction = null)
 	{
 		// List state information.
-		parent::populateState('id', 'ASC');
+		parent::populateState('date_paid', 'DESC');
 
 		$context = $this->getUserStateFromRequest($this->context.'.filter.search', 'filter_search');
 		$this->setState('filter.search', $context);
@@ -109,7 +110,7 @@ class BookingsModel extends ListModel
 	 *
 	 * @return  string A store id.
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	protected function getStoreId($id = '')
 	{
@@ -127,7 +128,7 @@ class BookingsModel extends ListModel
 	 *
 	 * @return  DatabaseQuery
 	 *
-	 * @since   1.0.0
+	 * @since   1.0.2
 	 */
 	protected function getListQuery()
 	{
@@ -141,7 +142,7 @@ class BookingsModel extends ListModel
 				'list.select', 'DISTINCT a.*'
 			)
 		);
-		$query->from('`#__ra_bookings` AS a');
+		$query->from('`#__ra_payments` AS a');
 		
 		// Join over the users for the checked out user
 		$query->select("uc.name AS uEditor");
@@ -177,8 +178,8 @@ class BookingsModel extends ListModel
 		}
 		
 		// Add the list ordering clause.
-		$orderCol  = $this->state->get('list.ordering', 'id');
-		$orderDirn = $this->state->get('list.direction', 'ASC');
+		$orderCol  = $this->state->get('list.ordering', 'date_paid');
+		$orderDirn = $this->state->get('list.direction', 'DESC');
 
 		if ($orderCol && $orderDirn)
 		{

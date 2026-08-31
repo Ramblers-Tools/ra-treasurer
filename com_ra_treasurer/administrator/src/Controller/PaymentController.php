@@ -1,6 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
@@ -15,13 +15,13 @@ use Joomla\CMS\MVC\Controller\FormController;
 use Joomla\CMS\Versioning\VersionableControllerTrait;
 
 /**
- * Booking controller class.
+ * Payment controller class.
  *
- * @since  1.0.0
+ * @since  1.0.2
  */
-class BookingController extends FormController
+class PaymentController extends FormController
 {
 	use VersionableControllerTrait;
 
-	protected $view_list = 'bookings';
+	protected $view_list = 'payments';
 }

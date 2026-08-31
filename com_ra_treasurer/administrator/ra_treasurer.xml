@@ -2,7 +2,7 @@
 <extension type="component" version="4.0" method="upgrade">
     <name>RA Treasurer</name>
     <element>com_ra_treasurer</element>
-    <creationDate>2026-08-22</creationDate>
+    <creationDate>2026-08-31</creationDate>
     <copyright>2026 Ramblers Tools</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <author>Charlie Bigley</author>
@@ -11,48 +11,22 @@
     <version>1.0.0</version>
     <description>Treasurer tools for Ramblers groups</description>
     <namespace path="src">Ramblers\Component\Ra_treasurer</namespace>
-    
-    
-    
-    <install> <!-- Runs on install -->
-        <sql>
-            <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
-        </sql>
-    </install>
-    <update> <!-- Runs on update -->
-        <schemas>
-            <schemapath type="mysql">sql/updates</schemapath>
-        </schemas>
-    </update>
-    <uninstall> <!-- Runs on uninstall -->
-        <sql>
-            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
-        </sql>
-    </uninstall>
-
-    
-
+    <scriptfile>script.php</scriptfile>
     <files folder="site">
         <folder>src</folder>
         <folder>forms</folder>
         <folder>tmpl</folder>
     </files>
-    <media destination="com_ra_treasurer" folder="media">
-        <folder>css</folder>
-        <folder>js</folder>
-        <filename>joomla.asset.json</filename>
-    </media>
-    <languages folder="site/languages">
-        
+    <languages folder="site/languages">       
 			<language tag="en-GB">en-GB/com_ra_treasurer.ini</language>
     </languages>
     <administration>
         <menu>COM_RA_TREASURER</menu>
         <submenu>
             
-			<menu link="option=com_ra_treasurer&amp;view=bookings" view="bookings" alt="Ra_treasurer/Bookings">COM_RA_TREASURER_TITLE_BOOKINGS</menu>
+			<menu link="option=com_ra_treasurer&amp;view=payments" view="payments" alt="Ra_treasurer/Payments">Payments</menu>
 
-			<menu link="option=com_ra_treasurer&amp;view=reports" view="reports" alt="Ra_treasurer/Reports">COM_RA_TREASURER_TITLE_REPORTS</menu>
+			<menu link="option=com_ra_treasurer&amp;view=reports" view="reports" alt="Ra_treasurer/Reports">Reports</menu>
 
         </submenu>
         <files folder="administrator">
@@ -63,10 +37,8 @@
             <folder>tmpl</folder>
             <folder>services</folder>
             <folder>presets</folder>
-            <folder>sql</folder>
         </files>
-        <languages folder="administrator/languages">
-            
+        <languages folder="administrator/languages">         
 			<language tag="en-GB">en-GB/com_ra_treasurer.ini</language>
 			<language tag="en-GB">en-GB/com_ra_treasurer.sys.ini</language>
         </languages>
@@ -86,3 +58,4 @@
         <server type="extension" name="RA Treasurer Update Server">https://raw.githubusercontent.com/Ramblers-Tools/ra-treasurer/main/updates/pkg_ra_treasurer.xml</server>
     </updateservers>
 </extension>
+

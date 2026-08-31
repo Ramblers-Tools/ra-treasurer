@@ -21,7 +21,6 @@ use \Joomla\CMS\Helper\TagsHelper;
 use \Joomla\CMS\Layout\FileLayout;
 use \Joomla\Database\ParameterType;
 use \Joomla\Utilities\ArrayHelper;
-use \Ramblers\Component\Ra_treasurer\Site\Helper\Ra_treasurerHelper;
 use \Joomla\Database\DatabaseInterface;
 
 /**
@@ -47,13 +46,14 @@ class PaymentsModel extends ListModel {
                 'ordering', 'a.ordering',
                 'created_by', 'a.created_by',
                 'modified_by', 'a.modified_by',
-                'member_name', 'a.member_name',
-                'event_name', 'a.event_name',
+                'member_name', 'p.preferred_name',
+                'event_name', 'e.title',
                 'amount_paid', 'a.amount_paid',
                 'event_date', 'e.event_date',
                 'created', 'a.created',
                 'modified', 'a.modified',
                 'date_paid', 'a.date_paid',
+                'payment_created', 'a.payment_created',
             );
         }
 
@@ -135,8 +135,9 @@ class PaymentsModel extends ListModel {
         $query->select('e.event_date, e.title');
         $query->select('p.preferred_name');
         $query->join('INNER', '#__ra_events AS e ON e.id=a.event_id');
-        $query->join('INNER', '#__ra_profiles AS p ON p.id=a.user_id');
-
+        $query->join('LEFT', '#__ra_profiles AS p ON p.id=a.user_id');
+        $query->where('a.amount_paid IS NOT NULL');
+        $query->where('e.api_site_id IS NULL');
         if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
             $query->where('a.state = 1');
         } else {
@@ -151,11 +152,9 @@ class PaymentsModel extends ListModel {
                 $query->where('a.id = ' . (int) substr($search, 3));
             } else {
                 $search = $db->Quote('%' . $db->escape($search, true) . '%');
-                $query->where('( a.member_name LIKE ' . $search . '  OR  a.event_name LIKE ' . $search . ' )');
+                $query->where('( p.preferred_name LIKE ' . $search . '  OR  e.title LIKE ' . $search . ' )');
             }
         }
-
-
 
 
         // Add the list ordering clause.
@@ -165,7 +164,9 @@ class PaymentsModel extends ListModel {
         if ($orderCol && $orderDirn) {
             $query->order($db->escape($orderCol . ' ' . $orderDirn));
         }
-
+        if (JDEBUG) {
+            Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');
+        }
         return $query;
     }
 

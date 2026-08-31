@@ -1,6 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
@@ -24,7 +24,7 @@ HTMLHelper::_('bootstrap.tooltip');
 
 <form
 	action="<?php echo Route::_('index.php?option=com_ra_treasurer&layout=edit&id=' . (int) $this->item->id); ?>"
-	method="post" enctype="multipart/form-data" name="adminForm" id="booking-form" class="form-validate form-horizontal">
+	method="post" enctype="multipart/form-data" name="adminForm" id="payment-form" class="form-validate form-horizontal">
 
 	
 	<?php echo HTMLHelper::_('uitab.startTabSet', 'myTab', array('active' => 'recipient')); ?>
@@ -35,10 +35,11 @@ HTMLHelper::_('bootstrap.tooltip');
 				<legend><?php echo Text::_('COM_RA_TREASURER_FIELDSET_RECIPIENT'); ?></legend>
 				<?php echo $this->form->renderField('member_name'); ?>
 				<?php echo $this->form->renderField('event_name'); ?>
-				<?php echo $this->form->renderField('amount_due'); ?>
+				<?php echo $this->form->renderField('amount_paid'); ?>
 				<?php echo $this->form->renderField('event_date'); ?>
 				<?php echo $this->form->renderField('created'); ?>
 				<?php echo $this->form->renderField('modified'); ?>
+				<?php echo $this->form->renderField('date_paid'); ?>
 			</fieldset>
 		</div>
 	</div>

@@ -1,13 +1,13 @@
 <?php
 /**
- * @version    CVS: 1.0.0
+ * @version    CVS: 1.0.2
  * @package    Com_Ra_treasurer
  * @author     Charlie Bigley <charlie@ramblers.tools>
  * @copyright  Ramblers Tools
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-namespace Ramblers\Component\Ra_treasurer\Administrator\View\Booking;
+namespace Ramblers\Component\Ra_treasurer\Administrator\View\Payment;
 // No direct access
 defined('_JEXEC') or die;
 
@@ -18,9 +18,9 @@ use \Ramblers\Component\Ra_treasurer\Administrator\Helper\Ra_treasurerHelper;
 use \Joomla\CMS\Language\Text;
 
 /**
- * View class for a single Booking.
+ * View class for a single Payment.
  *
- * @since  1.0.0
+ * @since  1.0.2
  */
 class HtmlView extends BaseHtmlView
 {
@@ -80,35 +80,35 @@ class HtmlView extends BaseHtmlView
 
 		$canDo = Ra_treasurerHelper::getActions();
 
-		ToolbarHelper::title(Text::_('COM_RA_TREASURER_TITLE_BOOKING'), "generic");
+		ToolbarHelper::title(Text::_('COM_RA_TREASURER_TITLE_PAYMENT'), "generic");
 
 		// If not checked out, can save the item.
 		if (!$checkedOut && ($canDo->get('core.edit') || ($canDo->get('core.create'))))
 		{
-			ToolbarHelper::apply('booking.apply', 'JTOOLBAR_APPLY');
-			ToolbarHelper::save('booking.save', 'JTOOLBAR_SAVE');
+			ToolbarHelper::apply('payment.apply', 'JTOOLBAR_APPLY');
+			ToolbarHelper::save('payment.save', 'JTOOLBAR_SAVE');
 		}
 
 		if (!$checkedOut && ($canDo->get('core.create')))
 		{
-			ToolbarHelper::custom('booking.save2new', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
+			ToolbarHelper::custom('payment.save2new', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
 		}
 
 		// If an existing item, can save to a copy.
 		if (!$isNew && $canDo->get('core.create'))
 		{
-			ToolbarHelper::custom('booking.save2copy', 'save-copy.png', 'save-copy_f2.png', 'JTOOLBAR_SAVE_AS_COPY', false);
+			ToolbarHelper::custom('payment.save2copy', 'save-copy.png', 'save-copy_f2.png', 'JTOOLBAR_SAVE_AS_COPY', false);
 		}
 
 		
 
 		if (empty($this->item->id))
 		{
-			ToolbarHelper::cancel('booking.cancel', 'JTOOLBAR_CANCEL');
+			ToolbarHelper::cancel('payment.cancel', 'JTOOLBAR_CANCEL');
 		}
 		else
 		{
-			ToolbarHelper::cancel('booking.cancel', 'JTOOLBAR_CLOSE');
+			ToolbarHelper::cancel('payment.cancel', 'JTOOLBAR_CLOSE');
 		}
 	}
 }

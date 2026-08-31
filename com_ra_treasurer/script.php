@@ -14,24 +14,19 @@ use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
-use Joomla\CMS\Object\CMSObject;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
+use Joomla\Database\ParameterType;
 
 class Com_Ra_treasurerInstallerScript {
+
+    private const MINIMUM_MAILMAN_VERSION = '5.0.18';
+    private const MINIMUM_TOOLS_VERSION = '4.0.13';
 
     private $component;
     private $minimumJoomlaVersion = '4.0';
     private $minimumPHPVersion = JOOMLA_MINIMUM_PHP;
     private $reconfigure_message;
-    private $required_version;
-
-    private function fail(string $message): bool {
-        Factory::getApplication()->enqueueMessage($message, 'error');
-        Log::add($message, Log::ERROR, 'jerror');
-
-        return false;
-    }
 
     function buildButton($url, $text, $newWindow = 0, $colour = '') {
         if ($colour == '') {
@@ -87,7 +82,7 @@ class Com_Ra_treasurerInstallerScript {
     }
 
     private function checkColumnExists($table, $column) {
-        $config = JFactory::getConfig();
+        $config = Factory::getConfig();
         $database = $config->get('db');
         $this->dbPrefix = $config->get('dbprefix');
 
@@ -101,9 +96,26 @@ class Com_Ra_treasurerInstallerScript {
         return $this->getValue($sql);
     }
 
+    private function checkMinimumComponentVersion(string $component, string $requiredVersion): bool {
+        try {
+            $installedVersion = $this->getInstalledComponentVersion($component);
+        } catch (\RuntimeException $exception) {
+            Log::add($exception->getMessage(), Log::ERROR, 'jerror');
+            return $this->fail('RA Treasurer could not read the installed version of ' . $component . '.');
+        }
+
+        if ($installedVersion !== null && version_compare($installedVersion, $requiredVersion, 'ge')) {
+            $this->message('Version ' . $requiredVersion . ' of ' . $component
+                    . ' required; version ' . $installedVersion . ' found.');
+            return true;
+        }
+
+        return $this->fail('RA Treasurer requires ' . $component . ' version ' . $requiredVersion
+                        . ' or later; found ' . ($installedVersion ?: 'no readable version') . '.');
+    }
     function checkTable($table, $details, $details2 = '') {
 
-        $config = JFactory::getConfig();
+        $config = Factory::getConfig();
         $database = $config->get('db');
         $this->dbPrefix = $config->get('dbprefix');
 
@@ -137,7 +149,7 @@ class Com_Ra_treasurerInstallerScript {
         }
     }
 
-    private function deleteFile($target) {
+        private function deleteFile($target) {
 // Not needed, could use a built in function (if details were known!)
         $file = JPATH_ROOT . $target;
         if (file_exists($file)) {
@@ -169,116 +181,78 @@ class Com_Ra_treasurerInstallerScript {
         }
     }
 
+    private function ensurePaymentColumns(): void {
+        $this->checkColumn('ra_bookings', 'amount_paid', 'A', 'DECIMAL(7,2) NULL DEFAULT NULL AFTER custom2; ');
+        $this->checkColumn('ra_bookings', 'date_paid', 'A', 'DATE NULL DEFAULT NULL AFTER amount_paid; ');
+        $this->checkColumn('ra_bookings', 'payment_created', 'A', 'DATETIME NULL DEFAULT NULL AFTER date_paid; ');
+        $this->checkColumn('ra_bookings', 'payment_created_by', 'A', 'INT NULL DEFAULT NULL AFTER payment_created; ');
+        $this->checkColumn('ra_bookings', 'payment_modified', 'A', 'DATETIME NULL DEFAULT NULL AFTER payment_created_by; ');
+        $this->checkColumn('ra_bookings', 'payment_modified_by', 'A', 'INT NULL DEFAULT NULL AFTER payment_modified; ');
+    }
+
     private function executeCommand($sql) {
-        $db = JFactory::getDbo();
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true);
         $db->setQuery($sql);
         return $db->execute();
     }
 
-    public function getDatabaseVersion($component = 'com_ra_treasurer') {
-// Get the extension ID
-        $db = JFactory::getDbo();
-        $eid = $this->getExtensionId($component);
+    private function fail(string $message): bool {
+        Factory::getApplication()->enqueueMessage($message, 'error');
+        Log::add($message, Log::ERROR, 'jerror');
 
-        if ($eid != null) {
-// Get the schema version
-            $query = $db->getQuery(true);
-            $query->select('manifest_cache')
-                    ->from('#__extensions')
-                    ->where('extension_id = ' . $db->quote($eid));
-            $db->setQuery($query);
-            $json = $db->loadResult();
-            $values = json_decode($json->manifest_cache);
-            return $version;
-        }
-        return null;
+        return false;
     }
+    /**
+     * Return the installed manifest version for a component.
+     */
+    private function getInstalledComponentVersion(string $component = 'com_ra_treasurer'): ?string {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $query = $db->getQuery(true);
+        $extensionType = 'component';
 
-    public function getDbVersion($component = 'com_ra_treasurer') {
-        $sql = 'SELECT s.version_id ';
-        $sql .= 'FROM #__extensions as e ';
-        $sql .= 'LEFT JOIN #__schemas AS s ON s.extension_id = e.extension_id ';
-        $sql .= 'WHERE e.element="' . $component . '"';
-        return $this->getValue($sql);
-    }
+        $query->select($db->quoteName('e.manifest_cache'))
+                ->from($db->quoteName('#__extensions', 'e'))
+                ->where($db->quoteName('e.element') . ' = :component')
+                ->where($db->quoteName('e.type') . ' = :extensionType')
+                ->bind(':component', $component, ParameterType::STRING)
+                ->bind(':extensionType', $extensionType, ParameterType::STRING);
 
-    public function getVersion($component = 'com_ra_treasurer') {
-        // This returns the version as display by System / Manage extensions
-        $sql = 'SELECT manifest_cache ';
-        $sql .= 'FROM  #__extensions  ';
-        $sql .= 'WHERE element="' . $component . '"';
-        $json = $this->getValue($sql);
+        $db->setQuery($query);
+        $manifestCache = $db->loadResult();
 
-        if (empty($json)) {
+        if ($manifestCache === null) {
             return null;
         }
 
-        $data = json_decode($json);
-
-        return (is_object($data) && isset($data->version)) ? (string) $data->version : null;
-    }
-
-    /**
-     *     returns details of the component version and the database version
-     *
-     * @return  CMSObject
-     *
-     */
-    public function getVersions($component = 'com_ra_treasurer') {
-        // Returns an object with two values:
-        //  ->component
-        //  ->db_version
-        $versions = new CMSObject;
-        $sql = 'SELECT e.manifest_cache, s.version_id AS db_version ';
-        $sql .= 'FROM #__extensions as e ';
-        $sql .= 'LEFT JOIN #__schemas AS s ON s.extension_id = e.extension_id ';
-        $sql .= 'WHERE element="' . $component . '"';
-
-        $db = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true);
-        $db->setQuery($sql);
-        $db->execute();
-        $item = $db->loadObject();
-        if ($item == false) {
-            $this->fail('Installer could not find version information for ' . $component . '.');
-            return false;
-        } else {
-            $values = json_decode($item->manifest_cache);
-            $versions->component = $values->version;
-            $versions->db_version = $item->db_version;
+        try {
+            $manifest = json_decode((string) $manifestCache, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw new \RuntimeException(
+                    'Installer could not decode version information for ' . $component . '.',
+                    0,
+                    $exception
+            );
         }
 
-        return $versions;
-    }
+        if (!is_array($manifest)) {
+            throw new \RuntimeException('Installer found invalid version information for ' . $component . '.');
+        }
 
-    /**
-     * Loads the ID of the extension from the database
-     *
-     * @return mixed
-     */
-    public function getExtensionId($component = 'com_ra_treasurer') {
-        $db = JFactory::getDbo();
+        $installedVersion = $manifest['version'] ?? null;
 
-        $query = $db->getQuery(true);
-        $query->select('extension_id')
-                ->from('#__extensions')
-                ->where($db->qn('element') . ' = ' . $db->q($component) . ' AND type=' . $db->q('component'));
-        $db->setQuery($query);
-        $eid = $db->loadResult();
-//        echo $db->replacePrefix($query) . '<br>';
-        return $eid;
+        return is_scalar($installedVersion) ? (string) $installedVersion : null;
     }
 
     private function getValue($sql) {
-        $db = JFactory::getDbo();
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true);
         $db->setQuery($sql);
         return $db->loadResult();
     }
 
     public function install($parent): bool {
-        echo '<p>Installing RA Treasurer (com_ra_treasurer) ' . '</p>';
+        $this->message('Installing RA Treasurer (com_ra_treasurer).');
         if (!empty($this->minimumPHPVersion) && version_compare(PHP_VERSION, $this->minimumPHPVersion, '<')) {
             return $this->fail(Text::sprintf('JLIB_INSTALLER_MINIMUM_PHP', $this->minimumPHPVersion));
         }
@@ -287,14 +261,8 @@ class Com_Ra_treasurerInstallerScript {
         }
 
         if (ComponentHelper::isEnabled('com_ra_tools', true)) {
-            $tools_version = $this->getVersion('com_ra_tools');
-            $tools_required = '4.0.13';
-            echo '<p>Version ' . $tools_required . ' of com_ra_tools required<br>';
-            if (version_compare($tools_version, $tools_required, 'ge')) {
-                echo '<p>Version ' . $tools_version . ' of com_ra_tools found</p>';
-            } else {
-                return $this->fail('RA Treasurer requires com_ra_tools version ' . $tools_required
-                                . ' or later; found ' . ($tools_version ?: 'no readable version') . '.');
+            if (!$this->checkMinimumComponentVersion('com_ra_tools', self::MINIMUM_TOOLS_VERSION)) {
+                return false;
             }
         } else {
             return $this->fail('RA Treasurer requires that com_ra_tools is installed and enabled.');
@@ -305,18 +273,71 @@ class Com_Ra_treasurerInstallerScript {
         }
         /*
           Preview SQL
-          ALTER TABLE `j5_ra_bookings` ADD `amount_paid` DECIMAL((7,2)) NULL DEFAULT NULL AFTER `custom2`,
-         * ADD `date_paid` DATE NULL DEFAULT NULL AFTER `amount_paid`, ADD `payment_created` INT NULL DEFAULT NULL AFTER `date_paid`,
+          ALTER TABLE `j5_ra_bookings` ADD `amount_paid` DECIMAL(7,2) NULL DEFAULT NULL AFTER `custom2`,
+         * ADD `date_paid` DATETIME NULL DEFAULT NULL AFTER `amount_paid`,
+         * ADD `payment_created` DATETIME NULL DEFAULT NULL AFTER `date_paid`,
          * ADD `payment_created_by` INT NULL DEFAULT NULL AFTER `payment_created`,
-         * ADD `payment_modified` DATE NULL DEFAULT NULL AFTER `payment_created_by`,
+         * ADD `payment_modified` DATETIME NULL DEFAULT NULL AFTER `payment_created_by`,
          * ADD `payment_modified_by` INT NULL DEFAULT NULL AFTER `payment_modified`;
          */
-        $this->checkColumn('ra_bookings', 'amount_paid', 'A', 'DECIMAL(7,2) NULL DEFAULT NULL AFTER custom2; ');
-        $this->checkColumn('ra_bookings', 'date_paid', 'A', 'DATE NULL DEFAULT NULL AFTER amount_paid; ');
-        $this->checkColumn('ra_bookings', 'payment_created', 'A', 'DATE NULL DEFAULT NULL AFTER date_paid; ');
-        $this->checkColumn('ra_bookings', 'payment_created_by', 'A', 'INT NULL DEFAULT NULL AFTER payment_created; ');
-        $this->checkColumn('ra_bookings', 'payment_modified', 'A', 'DATE NULL DEFAULT NULL AFTER payment_created_by; ');
-        $this->checkColumn('ra_bookings', 'payment_modified_by', 'A', 'INT NULL DEFAULT NULL AFTER payment_modified; ');
+        $this->ensurePaymentColumns();
+        return true;
+    }
+
+    private function message(string $message): void {
+        Factory::getApplication()->enqueueMessage($message, 'message');
+    }
+
+    public function postflight($type, $parent) {
+        $this->message('Postflight RA Treasurer (com_ra_treasurer).');
+        if ($type == 'uninstall') {
+            return true;
+        }
+        echo '<b>Useful links</b><br>';
+        echo $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', 'granite') . '<br>';
+        echo $this->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure');
+        return true;
+    }
+
+    public function preflight($type, $parent): bool {
+        $this->message('Preflight RA Treasurer (type=' . $type . ').');
+        if ($type == 'uninstall') {
+            return true;
+        }
+        if ($type == 'install') {
+            $this->message('No action required by preflight on install.');
+            return true;
+        }
+
+        if (ComponentHelper::isEnabled('com_ra_treasurer', true)) {
+            try {
+                $currentVersion = $this->getInstalledComponentVersion();
+            } catch (\RuntimeException $exception) {
+                return $this->fail($exception->getMessage());
+            }
+
+            if ($currentVersion === null) {
+                return $this->fail('Installer could not find readable version information for com_ra_treasurer.');
+            }
+
+            $this->message('com_ra_treasurer already present, version=' . $currentVersion . '.');
+        } else {
+            return $this->fail('Installer could not find the existing com_ra_treasurer installation.');
+        }
+        if (!ComponentHelper::isEnabled('com_ra_tools', true)) {
+            return $this->fail('RA Treasurer requires the enabled component com_ra_tools.');
+        }
+        if (!ComponentHelper::isEnabled('com_ra_mailman', true)) {
+            return $this->fail('RA Treasurer requires the enabled component com_ra_mailman.');
+        }
+
+        if (!$this->checkMinimumComponentVersion('com_ra_mailman', self::MINIMUM_MAILMAN_VERSION)) {
+            return false;
+        }
+
+        if (!$this->checkMinimumComponentVersion('com_ra_tools', self::MINIMUM_TOOLS_VERSION)) {
+            return false;
+        }
         return true;
     }
 
@@ -328,83 +349,23 @@ class Com_Ra_treasurerInstallerScript {
 
     public function uninstall($parent): bool {
         echo '<p>Uninstalling RA Treasurer (com_ra_treasurer)<br>';
-        $versions = $this->getVersions();
-        echo '<p>Version ' . $versions->component;
-        echo ', database version ' . $versions->db_version . '</p>';
+        try {
+            $installedVersion = $this->getInstalledComponentVersion();
+        } catch (\RuntimeException $exception) {
+            Log::add($exception->getMessage(), Log::WARNING, 'jerror');
+            $installedVersion = null;
+        }
+
+        if ($installedVersion === null) {
+            echo '<p>Version information not available</p>';
+        } else {
+            echo '<p>Version ' . $installedVersion . '</p>';
+        }
         return true;
     }
 
     public function update($parent): bool {
         echo '<p>Updating RA Treasurer (com_ra_treasurer)</p>';
-//return true;
-// You can have the backend jump directly to the newly updated component configuration page
-// $parent->getParent()->setRedirectURL('index.php?option=com_ra_treasurer');
-        return true;
-    }
-
-    public function postflight($type, $parent) {
-        echo 'Postflight RA Treasurer (com_ra_treasurer)<br>';
-        if ($type == 'uninstall') {
-            return true;
-        }
-        echo '<b>Useful links</b><br>';
-        echo $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', 'granite') . '<br>';
-        echo $this->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure');
-        return true;
-    }
-
-    public function preflight($type, $parent): bool {
-        echo 'Preflight RA Treasurer (type=' . $type . ')<br>';
-        if ($type == 'uninstall') {
-            return true;
-        }
-        if ($type == 'install') {
-            echo 'No action required by preflight on install<br>';
-            return true;
-        }
-
-        if (ComponentHelper::isEnabled('com_ra_treasurer', true)) {
-            $this->current_version = $this->getVersion();
-            echo 'com_ra_treasurer already present, version=' . $this->getVersion();
-            echo ', DB version=' . $this->getDbVersion() . '<br>';
-        }
-        if (!ComponentHelper::isEnabled('com_ra_tools', true)) {
-            return $this->fail('RA Treasurer requires the enabled component com_ra_tools.');
-        }
-        if (!ComponentHelper::isEnabled('com_ra_mailman', true)) {
-            return $this->fail('RA Treasurer requires the enabled component com_ra_mailman.');
-        }
-
-        $mailman_required = '5.0.18';
-        $mailman_version = $this->getVersion('com_ra_mailman');
-
-        if (!version_compare($mailman_version, $mailman_required, 'ge')) {
-            return $this->fail('RA Treasurer requires com_ra_mailman version ' . $mailman_required
-                            . ' or later; found ' . ($mailman_version ?: 'no readable version') . '.');
-        }
-
-        $tools_required = '4.0.13';
-        $tools_version = $this->getVersion('com_ra_tools');
-        echo '<p>Version ' . $tools_required . ' of com_ra_tools required<br>';
-        if (version_compare($tools_version, $tools_required, 'ge')) {
-            echo 'Version ' . $tools_version . ' of com_ra_tools found</p>';
-        } else {
-            return $this->fail('RA Treasurer requires com_ra_tools version ' . $tools_required
-                            . ' or later; found ' . ($tools_version ?: 'no readable version') . '.');
-        }
-
-        $this->version_required = '1.1.0';
-
-        if (version_compare($this->current_version, $this->version_required, 'ge')) {
-            echo 'Current version is ' . $this->current_version . ', no additional processing required</p>';
-            return true;
-        } else {
-            echo '<p>Version is currently ' . $this->current_version . ', ';
-            echo 'Requires version >= ' . $this->version_required . '</p>';
-        }
-        if (version_compare($this->current_version, '1.2', 'le')) {
-//            $this->checkColumn('ra_organisations', 'notes', 'A', 'MEDIUMTEXT CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL AFTER details; ');
-        }
         return true;
     }
 
