@@ -26,6 +26,14 @@ PRIMARY KEY (`id`)
 ,KEY `idx_modified_by` (`modified_by`)
 ) DEFAULT COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `#__ra_claim_types` (
+`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+`description` VARCHAR(50) NOT NULL,
+`state` TINYINT(1) NOT NULL DEFAULT 1,
+PRIMARY KEY (`id`),
+KEY `idx_state` (`state`)
+) DEFAULT COLLATE=utf8mb4_unicode_ci;
+
 
 INSERT INTO `#__action_log_config` (`type_title`, `type_alias`, `id_holder`, `title_holder`, `table_name`, `text_prefix`)
 SELECT * FROM ( SELECT 'booking','com_ra_treasurer.booking','id','member_name','#__ra_bookings','PLG_ACTIONLOG_RA_TREASURER' ) AS tmp

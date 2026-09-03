@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="claimtype" label="Claim type">
+        <field name="id" type="text" label="ID" readonly="true" default="0" />
+        <field
+            name="description"
+            type="text"
+            label="Description"
+            description="Description for claims of this type"
+            filter="string"
+            maxlength="50"
+            required="true"
+        />
+        <field name="state" type="list" label="Status" default="1">
+            <option value="1">Published</option>
+            <option value="0">Unpublished</option>
+        </field>
+        <field name="ordering" type="hidden" filter="int" />
+    </fieldset>
+</form>

@@ -191,6 +191,20 @@ class Com_Ra_treasurerInstallerScript {
         $this->checkColumn('ra_bookings', 'payment_modified_by', 'A', 'INT NULL DEFAULT NULL AFTER payment_modified; ');
     }
 
+    private function ensureClaimTypesTable(): void {
+        $this->checkTable(
+                'ra_claim_types',
+                '(`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,'
+                . ' `description` VARCHAR(50) NOT NULL,'
+                . ' `ordering` INT(11) NOT NULL DEFAULT 0,'
+                . ' `state` TINYINT(1) NOT NULL DEFAULT 1,'
+                . ' PRIMARY KEY (`id`),'
+                . ' KEY `idx_state` (`state`),'
+                . ' KEY `idx_ordering` (`ordering`))'
+                . ' DEFAULT COLLATE=utf8mb4_unicode_ci'
+        );
+    }
+
     private function executeCommand($sql) {
         $db = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true);
@@ -283,6 +297,7 @@ class Com_Ra_treasurerInstallerScript {
          * ADD `payment_modified_by` INT NULL DEFAULT NULL AFTER `payment_modified`;
          */
         $this->ensurePaymentColumns();
+        $this->ensureClaimTypesTable();
         return true;
     }
 
@@ -369,6 +384,7 @@ class Com_Ra_treasurerInstallerScript {
     public function update($parent): bool {
         echo '<p>Updating RA Treasurer (com_ra_treasurer)</p>';
         $this->ensurePaymentColumns();
+        $this->ensureClaimTypesTable();
         return true;
     }
 

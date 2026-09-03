@@ -21,7 +21,10 @@
 			<language tag="en-GB">en-GB/com_ra_treasurer.ini</language>
     </languages>
     <administration>
-        <menu link="option=com_ra_ttreasure&amp;view=payments">RA Treasurer</menu>
+        <menu link="option=com_ra_treasurer&amp;view=payments">RA Treasurer</menu>
+        <submenu>
+            <menu link="option=com_ra_treasurer&amp;view=claimtypes">Claim types</menu>
+        </submenu>
         <files folder="administrator">
             <filename>access.xml</filename>
             <filename>config.xml</filename>
@@ -49,4 +52,3 @@
         <server type="extension" name="RA Treasurer Update Server">https://raw.githubusercontent.com/Ramblers-Tools/ra-treasurer/main/updates/pkg_ra_treasurer.xml</server>
     </updateservers>
 </extension>
-
