@@ -21,7 +21,7 @@ use Joomla\Database\ParameterType;
 class Com_Ra_treasurerInstallerScript {
 
     private const MINIMUM_MAILMAN_VERSION = '5.0.18';
-    private const MINIMUM_TOOLS_VERSION = '4.0.13';
+    private const MINIMUM_TOOLS_VERSION = '4.0.12';
 
     private $component;
     private $minimumJoomlaVersion = '4.0';
@@ -113,6 +113,7 @@ class Com_Ra_treasurerInstallerScript {
         return $this->fail('RA Treasurer requires ' . $component . ' version ' . $requiredVersion
                         . ' or later; found ' . ($installedVersion ?: 'no readable version') . '.');
     }
+
     function checkTable($table, $details, $details2 = '') {
 
         $config = Factory::getConfig();
@@ -149,7 +150,7 @@ class Com_Ra_treasurerInstallerScript {
         }
     }
 
-        private function deleteFile($target) {
+    private function deleteFile($target) {
 // Not needed, could use a built in function (if details were known!)
         $file = JPATH_ROOT . $target;
         if (file_exists($file)) {
@@ -203,6 +204,7 @@ class Com_Ra_treasurerInstallerScript {
 
         return false;
     }
+
     /**
      * Return the installed manifest version for a component.
      */
@@ -229,9 +231,9 @@ class Com_Ra_treasurerInstallerScript {
             $manifest = json_decode((string) $manifestCache, true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $exception) {
             throw new \RuntimeException(
-                    'Installer could not decode version information for ' . $component . '.',
-                    0,
-                    $exception
+                            'Installer could not decode version information for ' . $component . '.',
+                            0,
+                            $exception
             );
         }
 

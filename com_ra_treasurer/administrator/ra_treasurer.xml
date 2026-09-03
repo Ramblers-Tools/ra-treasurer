@@ -2,13 +2,13 @@
 <extension type="component" version="4.0" method="upgrade">
     <name>RA Treasurer</name>
     <element>com_ra_treasurer</element>
-    <creationDate>2026-08-31</creationDate>
+    <creationDate>03/09/2026</creationDate>
     <copyright>2026 Ramblers Tools</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <author>Charlie Bigley</author>
     <authorEmail>support@ramblers.tools</authorEmail>
     <authorUrl>https://ramblers.tools</authorUrl>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <description>Treasurer tools for Ramblers groups</description>
     <namespace path="src">Ramblers\Component\Ra_treasurer</namespace>
     <scriptfile>script.php</scriptfile>
@@ -21,14 +21,7 @@
 			<language tag="en-GB">en-GB/com_ra_treasurer.ini</language>
     </languages>
     <administration>
-        <menu>COM_RA_TREASURER</menu>
-        <submenu>
-            
-			<menu link="option=com_ra_treasurer&amp;view=payments" view="payments" alt="Ra_treasurer/Payments">Payments</menu>
-
-			<menu link="option=com_ra_treasurer&amp;view=reports" view="reports" alt="Ra_treasurer/Reports">Reports</menu>
-
-        </submenu>
+        <menu link="option=com_ra_ttreasure&amp;view=payments">RA Treasurer</menu>
         <files folder="administrator">
             <filename>access.xml</filename>
             <filename>config.xml</filename>
@@ -52,8 +45,6 @@
     </config>
     <plugins>
     </plugins>
-    
-
     <updateservers>
         <server type="extension" name="RA Treasurer Update Server">https://raw.githubusercontent.com/Ramblers-Tools/ra-treasurer/main/updates/pkg_ra_treasurer.xml</server>
     </updateservers>
