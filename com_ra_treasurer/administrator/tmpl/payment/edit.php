@@ -1,60 +1,71 @@
 <?php
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     com_ra_treasurer
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
-
-// No direct access
 defined('_JEXEC') or die;
 
-use \Joomla\CMS\HTML\HTMLHelper;
-use \Joomla\CMS\Factory;
-use \Joomla\CMS\Uri\Uri;
-use \Joomla\CMS\Router\Route;
-use \Joomla\CMS\Language\Text;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 $wa = $this->document->getWebAssetManager();
 $wa->useScript('keepalive')
-	->useScript('form.validate');
-HTMLHelper::_('bootstrap.tooltip');
+        ->useScript('form.validate');
+
+$showDate = static function ($value, string $format = 'DATE_FORMAT_LC4'): string {
+    if ($value === null || $value === '' || str_starts_with((string) $value, '0000-00-00')) {
+        return Text::_('COM_RA_TREASURER_NOT_SUPPLIED');
+    }
+
+    return HTMLHelper::_('date', $value, Text::_($format));
+};
 ?>
 
 <form
-	action="<?php echo Route::_('index.php?option=com_ra_treasurer&layout=edit&id=' . (int) $this->item->id); ?>"
-	method="post" enctype="multipart/form-data" name="adminForm" id="payment-form" class="form-validate form-horizontal">
+    action="<?php echo Route::_('index.php?option=com_ra_treasurer&view=payment&layout=edit&id=' . (int) $this->item->id); ?>"
+    method="post"
+    name="adminForm"
+    id="payment-form"
+    class="form-validate form-horizontal">
 
-	
-	<?php echo HTMLHelper::_('uitab.startTabSet', 'myTab', array('active' => 'recipient')); ?>
-	<?php echo HTMLHelper::_('uitab.addTab', 'myTab', 'recipient', Text::_('COM_RA_TREASURER_TAB_RECIPIENT', true)); ?>
-	<div class="row-fluid">
-		<div class="col-md-12 form-horizontal">
-			<fieldset class="adminform">
-				<legend><?php echo Text::_('COM_RA_TREASURER_FIELDSET_RECIPIENT'); ?></legend>
-				<?php echo $this->form->renderField('member_name'); ?>
-				<?php echo $this->form->renderField('event_name'); ?>
-				<?php echo $this->form->renderField('amount_paid'); ?>
-				<?php echo $this->form->renderField('event_date'); ?>
-				<?php echo $this->form->renderField('created'); ?>
-				<?php echo $this->form->renderField('modified'); ?>
-				<?php echo $this->form->renderField('date_paid'); ?>
-			</fieldset>
-		</div>
-	</div>
-	<?php echo HTMLHelper::_('uitab.endTab'); ?>
-	<input type="hidden" name="jform[id]" value="<?php echo isset($this->item->id) ? $this->item->id : ''; ?>" />
+    <div class="row">
+        <div class="col-lg-8">
+            <fieldset class="adminform">
 
-	<input type="hidden" name="jform[state]" value="<?php echo isset($this->item->state) ? $this->item->state : ''; ?>" />
+                <dl class="row">
+                    <dt class="col-sm-3"><?php echo Text::_('Booking Ref'); ?></dt>
+                    <dd class="col-sm-9"><?php echo (int) $this->item->id; ?></dd>
 
-	<?php echo $this->form->renderField('created_by'); ?>
-	<?php echo $this->form->renderField('modified_by'); ?>
+                    <dt class="col-sm-3"><?php echo Text::_('Event date'); ?></dt>
+                    <dd class="col-sm-9"><?php echo $this->escape($showDate($this->item->event_date ?? null)); ?></dd>
 
-	
-	<?php echo HTMLHelper::_('uitab.endTabSet'); ?>
+                    <dt class="col-sm-3"><?php echo Text::_('Event title'); ?></dt>
+                    <dd class="col-sm-9"><?php echo $this->escape((string) ($this->item->event_title ?? '')); ?></dd>
 
-	<input type="hidden" name="task" value=""/>
-	<?php echo HTMLHelper::_('form.token'); ?>
+                    <dt class="col-sm-3"><?php echo Text::_('Member name'); ?></dt>
+                    <dd class="col-sm-9"><?php echo $this->escape((string) ($this->item->member_name ?? '')); ?></dd>
 
+                </dl>
+
+<?php
+echo $this->form->renderField('date_paid');
+echo $this->form->renderField('amount_paid');
+echo $this->form->renderField('payment_created');
+echo $this->form->renderField('payment_created_by');
+echo $this->form->renderField('payment_modified');
+echo $this->form->renderField('payment_modified_by');
+echo '<div style="background-color:powderblue;">This function is intended to correct data entry errors, '
+ . 'but if you have issued a refund, you may set the amount paid to zero.</div>';
+?>
+            </fieldset>
+        </div>
+    </div>
+
+<?php echo $this->form->getInput('id'); ?>
+    <?php echo $this->form->getInput('state'); ?>
+    <?php echo $this->form->getInput('checked_out'); ?>
+    <?php echo $this->form->getInput('checked_out_time'); ?>
+    <input type="hidden" name="task" value="">
+    <?php echo HTMLHelper::_('form.token'); ?>
 </form>

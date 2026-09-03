@@ -55,29 +55,29 @@ $wa->useStyle('com_ra_tools.list');
                 <tr>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Date paid', 'a.date_paid', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Date paid', 'a.date_paid', $listDirn, $listOrder); ?>
                     </th>
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Payment created', 'a.payment_created', $listDirn, $listOrder); ?>
-                    </th>
-
-                    <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Amount paid', 'a.amount_paid', $listDirn, $listOrder); ?>
-                    </th>
-                    <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Event date', 'e.event_date', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Payment created', 'a.payment_created', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Event title', 'e.title', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Amount paid', 'a.amount_paid', $listDirn, $listOrder); ?>
+                    </th>
+                    <th class=''>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Event date', 'e.event_date', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'member', 'p.preferred_name', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Event title', 'e.title', $listDirn, $listOrder); ?>
                     </th>
 
                     <th class=''>
-                        <?php echo HTMLHelper::_('grid.sort', 'Ref ID', 'a.id', $listDirn, $listOrder); ?>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Member', 'p.preferred_name', $listDirn, $listOrder); ?>
+                    </th>
+
+                    <th class=''>
+                        <?php echo HTMLHelper::_('searchtools.sort', 'Ref ID', 'a.id', $listDirn, $listOrder); ?>
                     </th>
 
                 </tr>
@@ -96,34 +96,22 @@ $wa->useStyle('com_ra_tools.list');
                     <?php $canEdit = $user->authorise('core.edit', 'com_ra_treasurer'); ?>
 
                     <tr class="row<?php echo $i % 2; ?>">
-                        <td>
-                            <?php echo $item->date_paid; ?>
-                        </td>
-                        <td>
-                            <?php
-                            $date = $item->payment_created;
-                            echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC2')) : '-';
-                            ?>
-                        </td>
 
-                        <td>
-                            <?php echo $item->amount_paid; ?>
-                        </td>
-                        <td>
-                            <?php
-                            $date = $item->event_date;
-                            echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC4')) : '-';
-                            ?>
-                        </td>
-                        <td>
-                            <?php echo $item->title; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->preferred_name; ?>
-                        </td>
-                        <td>
-                            <?php echo $item->id; ?>
-                        </td>
+                        <?php
+                        echo '<td>' . $item->date_paid . '</td>';
+                        echo '<td>';
+                        $date = $item->payment_created;
+                        echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC2')) : '-';
+                        echo '</td>';
+                        echo '<td>' . $item->amount_paid . '</td>';
+                        echo '<td>';
+                        $date = $item->event_date;
+                        echo $date > 0 ? HTMLHelper::_('date', $date, Text::_('DATE_FORMAT_LC2')) : '-';
+                        echo '</td>';
+                        echo '<td>' . $item->title . '</td>';
+                        echo '<td>' . $item->preferred_name . '</td>';
+                        echo '<td>' . $item->id . '</td>';
+                        ?>
 
                     </tr>
                 <?php endforeach; ?>

@@ -154,6 +154,10 @@ class BookingsModel extends ListModel {
 
         if ($orderCol && $orderDirn) {
             $query->order($db->escape($orderCol . ' ' . $orderDirn));
+
+            if (in_array($orderCol, ['e.title', 'p.preferred_name'], true)) {
+                $query->order($db->quoteName('a.created') . ' ASC');
+            }
         }
         if (JDEBUG) {
             Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');

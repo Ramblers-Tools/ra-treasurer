@@ -2,23 +2,44 @@
 <form addfieldprefix="Ramblers\Component\Ra_tools\Administrator\Field">
   <fieldset>
     <field name="id" type="text" readonly="true" class="readonly" default="0" label="JGLOBAL_FIELD_ID_LABEL" description="JGLOBAL_FIELD_ID_DESC"/>
-    <field name="state" default="1" type="list" label="JSTATUS" description="JFIELD_PUBLISHED_DESC" class="inputbox" size="1">
+    <field name="amount_paid" filter="safehtml" type="text" label="Amount paid" description="Amount of the payment received"/>
+    <field name="date_paid" class="inputbox" format="%Y-%m-%d" timeformat="24" filter="user_utc" translateformat="false" showtime="false" 
+           singleheader="false" 
+           todaybutton="true" 
+           weeknumbers="false" 
+           filltable="true" 
+           type="calendar" 
+           label="Date paid" 
+           description="When the payment was received" />
+
+    <field name="payment_created" class="inputbox" format="%Y-%m-%d" timeformat="12" filter="server_utc" translateformat="false" showtime="false" singleheader="false" todaybutton="false" weeknumbers="false" filltable="false" type="calendar" 
+           label="Payment created" 
+           description="When the payment was recorded" />
+    <field name="payment_created_by" 
+           type="modifiedby" default="0" 
+           label="Payment created by" 
+           description="The person who recorded the payment" 
+           readonly="true" />
+    <field name="payment_modified" class="inputbox" format="%Y-%m-%d" timeformat="12" filter="server_utc" translateformat="false" showtime="false" singleheader="false" todaybutton="false" weeknumbers="false" filltable="false" type="calendar" 
+           label="Payment updated" 
+           description="When the payment was updated" />
+    <field name="payment_modified_by" 
+           type="modifiedby" default="0" 
+           label="Payment updated by" 
+           description="The person who updated the payment" 
+           readonly="true" />    
+    
+     <field name="state" default="1" type="list" label="JSTATUS" description="JFIELD_PUBLISHED_DESC" class="inputbox" size="1">
       <option value="1">JPUBLISHED</option>
       <option value="0">JUNPUBLISHED</option>
       <option value="2">JARCHIVED</option>
       <option value="-2">JTRASHED</option>
     </field>
-    <field name="ordering"/>
+
     <field name="checked_out" type="hidden" filter="unset"/>
-    <field name="checked_out_time" type="hidden" filter="unset"/>
-    <field name="created_by" type="createdby" default="0" label="JGLOBAL_FIELD_CREATED_BY_LABEL" description="JGLOBAL_FIELD_CREATED_BY_DESC" hidden="true" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_CREATED_BY"/>
-    <field name="modified_by" type="modifiedby" default="0" label="JGLOBAL_FIELD_MODIFIED_BY_LABEL" description="JGLOBAL_FIELD_MODIFIED_BY_DESC" hidden="true" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_MODIFIED_BY"/>
-    <field name="member_name" filter="safehtml" type="text" required="true" label="COM_RA_TREASURER_FORM_LBL_BOOKING_MEMBER_NAME" description="COM_RA_TREASURER_FORM_DESC_BOOKING_MEMBER_NAME" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_MEMBER_NAME"/>
-    <field name="event_name" maxlength="30" filter="safehtml" type="text" label="COM_RA_TREASURER_FORM_LBL_BOOKING_EVENT_NAME" description="COM_RA_TREASURER_FORM_DESC_BOOKING_EVENT_NAME" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_EVENT_NAME"/>
-    <field name="amount_due" filter="safehtml" type="text" label="COM_RA_TREASURER_FORM_LBL_BOOKING_AMOUNT_DUE" description="COM_RA_TREASURER_FORM_DESC_BOOKING_AMOUNT_DUE" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_AMOUNT_DUE"/>
-    <field name="event_date" class="inputbox" format="%Y-%m-%d" timeformat="12" filter="server_utc" translateformat="false" showtime="false" singleheader="false" todaybutton="false" weeknumbers="false" filltable="false" type="calendar" label="COM_RA_TREASURER_FORM_LBL_BOOKING_EVENT_DATE" description="COM_RA_TREASURER_FORM_DESC_BOOKING_EVENT_DATE" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_EVENT_DATE"/>
-    <field name="created" class="inputbox" format="%Y-%m-%d" timeformat="24" filter="user_utc" translateformat="false" showtime="false" singleheader="false" todaybutton="false" weeknumbers="false" filltable="false" type="calendar" label="COM_RA_TREASURER_FORM_LBL_BOOKING_CREATED" description="COM_RA_TREASURER_FORM_DESC_BOOKING_CREATED" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_CREATED"/>
-    <field name="modified" filter="safehtml" type="text" label="COM_RA_TREASURER_FORM_LBL_BOOKING_MODIFIED" description="COM_RA_TREASURER_FORM_DESC_BOOKING_MODIFIED" hint="COM_RA_TREASURER_FORM_LBL_BOOKING_MODIFIED"/>
+    <field name="checked_out_time" type="hidden" filter="unset"/>          
+           
+           
     <field name="version_note" type="text" label="JGLOBAL_FIELD_VERSION_NOTE_LABEL" description="JGLOBAL_FIELD_VERSION_NOTE_DESC" class="inputbox" size="45" labelclass="control-label"/>
   </fieldset>
 </form>

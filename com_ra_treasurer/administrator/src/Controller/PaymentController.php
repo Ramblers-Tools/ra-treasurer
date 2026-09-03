@@ -1,10 +1,7 @@
 <?php
+
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 24/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\Controller;
@@ -19,9 +16,10 @@ use Joomla\CMS\Versioning\VersionableControllerTrait;
  *
  * @since  1.0.2
  */
-class PaymentController extends FormController
-{
-	use VersionableControllerTrait;
+class PaymentController extends FormController {
 
-	protected $view_list = 'payments';
+    use VersionableControllerTrait;
+
+    protected $view_list = 'payments';
+
 }

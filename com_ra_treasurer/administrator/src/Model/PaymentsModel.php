@@ -1,204 +1,218 @@
 <?php
+
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 31/08/26 CB copied from site
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\Model;
+
 // No direct access.
 defined('_JEXEC') or die;
 
-use \Joomla\CMS\MVC\Model\ListModel;
-use \Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use \Joomla\CMS\Factory;
 use \Joomla\CMS\Language\Text;
+use \Joomla\CMS\MVC\Model\ListModel;
+use \Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use \Joomla\CMS\Helper\TagsHelper;
+use \Joomla\CMS\Layout\FileLayout;
 use \Joomla\Database\ParameterType;
 use \Joomla\Utilities\ArrayHelper;
-use Ramblers\Component\Ra_treasurer\Administrator\Helper\Ra_treasurerHelper;
 use \Joomla\Database\DatabaseInterface;
 
 /**
- * Methods supporting a list of Payments records.
+ * Methods supporting a list of Ra_treasurer records.
  *
  * @since  1.0.2
  */
-class PaymentsModel extends ListModel
-{
-	/**
-	* Constructor.
-	*
-	* @param   array  $config  An optional associative array of configuration settings.
-	*
-	* @see        JController
-	* @since      1.6
-	*/
-	public function __construct($config = array())
-	{
-		if (empty($config['filter_fields']))
-		{
-			$config['filter_fields'] = array(
-				'id', 'a.id',
-				'state', 'a.state',
-				'ordering', 'a.ordering',
-				'created_by', 'a.created_by',
-				'modified_by', 'a.modified_by',
-				'member_name', 'a.member_name',
-				'event_name', 'a.event_name',
-				'amount_paid', 'a.amount_paid',
-				'event_date', 'a.event_date',
-				'created', 'a.created',
-				'modified', 'a.modified',
-				'date_paid', 'a.date_paid',
-			);
-		}
+class PaymentsModel extends ListModel {
 
-		parent::__construct($config);
-	}
+    /**
+     * Constructor.
+     *
+     * @param   array  $config  An optional associative array of configuration settings.
+     *
+     * @see    JController
+     * @since  1.0.2
+     */
+    public function __construct($config = array()) {
+        if (empty($config['filter_fields'])) {
+            $config['filter_fields'] = array(
+                'id', 'a.id',
+                'state', 'a.state',
+                'ordering', 'a.ordering',
+                'created_by', 'a.created_by',
+                'modified_by', 'a.modified_by',
+                'member_name', 'p.preferred_name',
+                'event_name', 'e.title',
+                'amount_paid', 'a.amount_paid',
+                'event_date', 'e.event_date',
+                'created', 'a.created',
+                'modified', 'a.modified',
+                'date_paid', 'a.date_paid',
+                'payment_created', 'a.payment_created',
+            );
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * Method to auto-populate the model state.
+     *
+     * Note. Calling getState in this method will result in recursion.
+     *
+     * @param   string  $ordering   Elements order
+     * @param   string  $direction  Order direction
+     *
+     * @return  void
+     *
+     * @throws  Exception
+     *
+     * @since   1.0.2
+     */
+    protected function populateState($ordering = null, $direction = null) {
+        // List state information.
+        parent::populateState('a.date_paid', 'DESC');
+
+        $app = Factory::getApplication();
+        $list = $app->getUserState($this->context . '.list');
+
+        $value = $app->getUserState($this->context . '.list.limit', $app->get('list_limit', 25));
+        $list['limit'] = $value;
+
+        $this->setState('list.limit', $value);
+
+        $value = $app->input->get('limitstart', 0, 'uint');
+        $this->setState('list.start', $value);
+
+        $ordering = $this->getUserStateFromRequest($this->context . '.filter_order', 'filter_order', 'a.date_paid');
+        $direction = strtoupper($this->getUserStateFromRequest($this->context . '.filter_order_Dir', 'filter_order_Dir', 'DESC'));
+
+        if (!empty($ordering) || !empty($direction)) {
+            $list['fullordering'] = $ordering . ' ' . $direction;
+        }
+
+        $app->setUserState($this->context . '.list', $list);
+
+        $context = $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search');
+        $this->setState('filter.search', $context);
+
+        // Split context into component and optional section
+        if (!empty($context)) {
+            $parts = FieldsHelper::extract($context);
+
+            if ($parts) {
+                $this->setState('filter.component', $parts[0]);
+                $this->setState('filter.section', $parts[1]);
+            }
+        }
+    }
+
+    /**
+     * Build an SQL query to load the list data.
+     *
+     * @return  DatabaseQuery
+     *
+     * @since   1.0.2
+     */
+    protected function getListQuery() {
+        // Create a new query object.
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $query = $db->getQuery(true);
+
+        // Select the required fields from the table.
+        $query->select(
+                $this->getState(
+                        'list.select', 'DISTINCT a.*'
+                )
+        );
+
+        $query->from('`#__ra_bookings` AS a');
+        $query->select('e.event_date, e.title');
+        $query->select('p.preferred_name');
+        $query->join('INNER', '#__ra_events AS e ON e.id=a.event_id');
+        $query->join('LEFT', '#__ra_profiles AS p ON p.id=a.user_id');
+        $query->where('a.amount_paid IS NOT NULL');
+        $query->where('e.api_site_id IS NULL');
+        if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
+            $query->where('a.state = 1');
+        } else {
+            $query->where('(a.state IN (0, 1))');
+        }
+
+        // Filter by search in title
+        $search = $this->getState('filter.search');
+
+        if (!empty($search)) {
+            if (stripos($search, 'id:') === 0) {
+                $query->where('a.id = ' . (int) substr($search, 3));
+            } else {
+                $search = $db->Quote('%' . $db->escape($search, true) . '%');
+                $query->where('( p.preferred_name LIKE ' . $search . '  OR  e.title LIKE ' . $search . ' )');
+            }
+        }
 
 
-	
+        // Add the list ordering clause.
+        $orderCol = $this->state->get('list.ordering', 'a.date_paid');
+        $orderDirn = $this->state->get('list.direction', 'DESC');
 
-	
+        if ($orderCol && $orderDirn) {
+            $query->order($db->escape($orderCol . ' ' . $orderDirn));
+        }
+        if (JDEBUG) {
+            Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');
+        }
+        return $query;
+    }
 
-	
+    /**
+     * Method to get an array of data items
+     *
+     * @return  mixed An array of data on success, false on failure.
+     */
+    public function getItems() {
+        $items = parent::getItems();
 
-	/**
-	 * Method to auto-populate the model state.
-	 *
-	 * Note. Calling getState in this method will result in recursion.
-	 *
-	 * @param   string  $ordering   Elements order
-	 * @param   string  $direction  Order direction
-	 *
-	 * @return void
-	 *
-	 * @throws Exception
-	 */
-	protected function populateState($ordering = null, $direction = null)
-	{
-		// List state information.
-		parent::populateState('date_paid', 'DESC');
+        return $items;
+    }
 
-		$context = $this->getUserStateFromRequest($this->context.'.filter.search', 'filter_search');
-		$this->setState('filter.search', $context);
+    /**
+     * Overrides the default function to check Date fields format, identified by
+     * "_dateformat" suffix, and erases the field if it's not correct.
+     *
+     * @return void
+     */
+    protected function loadFormData() {
+        $app = Factory::getApplication();
+        $filters = $app->getUserState($this->context . '.filter', array());
+        $error_dateformat = false;
 
-		// Split context into component and optional section
-		if (!empty($context))
-		{
-			$parts = FieldsHelper::extract($context);
+        foreach ($filters as $key => $value) {
+            if (strpos($key, '_dateformat') && !empty($value) && $this->isValidDate($value) == null) {
+                $filters[$key] = '';
+                $error_dateformat = true;
+            }
+        }
 
-			if ($parts)
-			{
-				$this->setState('filter.component', $parts[0]);
-				$this->setState('filter.section', $parts[1]);
-			}
-		}
-	}
+        if ($error_dateformat) {
+            $app->enqueueMessage(Text::_("COM_RA_TREASURER_SEARCH_FILTER_DATE_FORMAT"), "warning");
+            $app->setUserState($this->context . '.filter', $filters);
+        }
 
-	/**
-	 * Method to get a store id based on model configuration state.
-	 *
-	 * This is necessary because the model is used by the component and
-	 * different modules that might need different sets of data or different
-	 * ordering requirements.
-	 *
-	 * @param   string  $id  A prefix for the store id.
-	 *
-	 * @return  string A store id.
-	 *
-	 * @since   1.0.2
-	 */
-	protected function getStoreId($id = '')
-	{
-		// Compile the store id.
-		$id .= ':' . $this->getState('filter.search');
-		$id .= ':' . $this->getState('filter.state');
+        return parent::loadFormData();
+    }
 
-		
-		return parent::getStoreId($id);
-		
-	}
+    /**
+     * Checks if a given date is valid and in a specified format (YYYY-MM-DD)
+     *
+     * @param   string  $date  Date to be checked
+     *
+     * @return bool
+     */
+    private function isValidDate($date) {
+        $date = str_replace('/', '-', $date);
+        return (date_create($date)) ? Factory::getDate($date)->format("Y-m-d") : null;
+    }
 
-	/**
-	 * Build an SQL query to load the list data.
-	 *
-	 * @return  DatabaseQuery
-	 *
-	 * @since   1.0.2
-	 */
-	protected function getListQuery()
-	{
-		// Create a new query object.
-		$db    = Factory::getContainer()->get(DatabaseInterface::class);
-		$query = $db->getQuery(true);
-
-		// Select the required fields from the table.
-		$query->select(
-			$this->getState(
-				'list.select', 'DISTINCT a.*'
-			)
-		);
-		$query->from('`#__ra_payments` AS a');
-		
-		// Join over the users for the checked out user
-		$query->select("uc.name AS uEditor");
-		$query->join("LEFT", "#__users AS uc ON uc.id=a.checked_out");
-		
-
-		// Filter by published state
-		$published = $this->getState('filter.state');
-
-		if (is_numeric($published))
-		{
-			$query->where('a.state = ' . (int) $published);
-		}
-		elseif (empty($published))
-		{
-			$query->where('(a.state IN (0, 1))');
-		}
-
-		// Filter by search in title
-		$search = $this->getState('filter.search');
-
-		if (!empty($search))
-		{
-			if (stripos($search, 'id:') === 0)
-			{
-				$query->where('a.id = ' . (int) substr($search, 3));
-			}
-			else
-			{
-				$search = $db->Quote('%' . $db->escape($search, true) . '%');
-				$query->where('( a.member_name LIKE ' . $search . '  OR  a.event_name LIKE ' . $search . ' )');
-			}
-		}
-		
-		// Add the list ordering clause.
-		$orderCol  = $this->state->get('list.ordering', 'date_paid');
-		$orderDirn = $this->state->get('list.direction', 'DESC');
-
-		if ($orderCol && $orderDirn)
-		{
-			$query->order($db->escape($orderCol . ' ' . $orderDirn));
-		}
-
-		return $query;
-	}
-
-	/**
-	 * Get an array of data items
-	 *
-	 * @return mixed Array of data items on success, false on failure.
-	 */
-	public function getItems()
-	{
-		$items = parent::getItems();
-		
-
-		return $items;
-	}
 }

@@ -366,6 +366,7 @@ class Com_Ra_treasurerInstallerScript {
 
     public function update($parent): bool {
         echo '<p>Updating RA Treasurer (com_ra_treasurer)</p>';
+        $this->ensurePaymentColumns();
         return true;
     }
 

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fields name="filter">
+        <field name="search" type="text" hint="COM_RA_TREASURER_SEARCH_FILTER_SUBMIT"
+               label="COM_RA_TREASURER_PAYMENTS_SEARCH_FILTER_DESC"
+               class="js-stools-search-string" />
+
+        
+
+    </fields>
+    <fields name="list">
+
+        <field name="fullordering"
+               type="list"
+               label="COM_RA_TREASURER_LIST_FULL_ORDERING"
+               description="COM_RA_TREASURER_LIST_FULL_ORDERING_DESC"
+               onchange="this.form.submit();"
+               default="a.date_paid DESC"
+        >
+            <option value="">JGLOBAL_SORT_BY</option>
+            <option value="a.date_paid ASC">Date paid ASC</option>
+            <option value="a.date_paid DESC">Date paid DESC</option>
+            <option value="a.payment_created ASC">Date created ASC</option>
+            <option value="a.payment_created DESC">Date created DESC</option>
+            <option value="a.amount_paid ASC">Amount paid ASC</option>
+            <option value="a.amount_paid DESC">Amount paid DESC</option>
+            <option value="e.event_date ASC">Event date ASC</option>
+            <option value="e.event_date DESC">Event date DESC</option>
+            <option value="e.title ASC">Event title ASC</option>
+            <option value="e.title DESC">Event title DESC</option>
+            <option value="p.preferred_name ASC">Member name ASC</option>
+            <option value="p.preferred_name DESC">Member name DESC</option>
+            <option value="a.id ASC">Ref ASC</option>
+            <option value="a.id DESC">Ref DESC</option>
+
+        </field>
+
+       <field name="limit"
+               type="limitbox"
+               label="COM_RA_TREASURER_LIST_LIMIT"
+               description="COM_RA_TREASURER_LIST_LIMIT_DESC"
+               class="input-mini"
+               default="25"
+               onchange="this.form.submit();"
+        />
+
+    </fields>
+</form>

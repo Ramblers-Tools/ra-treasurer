@@ -1,11 +1,8 @@
 <?php
 
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 20/08/26 created by component-creator
+ * 25/08/26 CB re-wrote select statement
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
@@ -163,6 +160,10 @@ class PaymentsModel extends ListModel {
 
         if ($orderCol && $orderDirn) {
             $query->order($db->escape($orderCol . ' ' . $orderDirn));
+
+            if (in_array($orderCol, ['e.title', 'p.preferred_name'], true)) {
+                $query->order($db->quoteName('a.date_paid') . ' DESC');
+            }
         }
         if (JDEBUG) {
             Factory::getApplication()->enqueueMessage($this->_db->replacePrefix($query), 'message');

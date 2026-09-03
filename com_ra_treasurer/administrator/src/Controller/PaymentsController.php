@@ -1,10 +1,7 @@
 <?php
+
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 24/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\Controller;
@@ -19,98 +16,45 @@ use Joomla\CMS\MVC\Controller\AdminController;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Utilities\ArrayHelper;
+use Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
 
 /**
  * Payments list controller class.
  *
  * @since  1.0.2
  */
-class PaymentsController extends AdminController
-{
-	/**
-	 * Method to clone existing Payments
-	 *
-	 * @return  void
-	 *
-	 * @throws  Exception
-	 */
-	public function duplicate()
-	{
-		// Check for request forgeries
-		$this->checkToken();
+class PaymentsController extends AdminController {
 
-		// Get id(s)
-		$pks = $this->input->post->get('cid', array(), 'array');
+    protected $db;
+    protected $app;
+    protected $toolsHelper;
 
-		try
-		{
-			if (empty($pks))
-			{
-				throw new \Exception(Text::_('COM_RA_TREASURER_NO_ELEMENT_SELECTED'));
-			}
+    public function __construct() {
+        parent::__construct();
+        $this->db = Factory::getDbo();
+        $this->toolsHelper = new ToolsHelper;
+        $this->app = Factory::getApplication();
+        $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+        $wa->registerAndUseStyle('ramblers', 'com_ra_tools/ramblers.css');
+    }
 
-			ArrayHelper::toInteger($pks);
-			$model = $this->getModel();
-			$model->duplicate($pks);
-			$this->setMessage(Text::_('COM_RA_TREASURER_ITEMS_SUCCESS_DUPLICATED'));
-		}
-		catch (\Exception $e)
-		{
-			Factory::getApplication()->enqueueMessage($e->getMessage(), 'warning');
-		}
+    public function cancel($key = null, $urlVar = null) {
+        $this->setRedirect('index.php?option=com_ra_tools&view=dashboard');
+    }
 
-		$this->setRedirect('index.php?option=com_ra_treasurer&view=payments');
-	}
+    /**
+     * Proxy for getModel.
+     *
+     * @param   string  $name    Optional. Model name
+     * @param   string  $prefix  Optional. Class prefix
+     * @param   array   $config  Optional. Configuration array for model
+     *
+     * @return  object	The Model
+     *
+     * @since   1.0.2
+     */
+    public function getModel($name = 'Payment', $prefix = 'Administrator', $config = array()) {
+        return parent::getModel($name, $prefix, array('ignore_request' => true));
+    }
 
-	/**
-	 * Proxy for getModel.
-	 *
-	 * @param   string  $name    Optional. Model name
-	 * @param   string  $prefix  Optional. Class prefix
-	 * @param   array   $config  Optional. Configuration array for model
-	 *
-	 * @return  object	The Model
-	 *
-	 * @since   1.0.2
-	 */
-	public function getModel($name = 'Payment', $prefix = 'Administrator', $config = array())
-	{
-		return parent::getModel($name, $prefix, array('ignore_request' => true));
-	}
-
-	
-
-	/**
-	 * Method to save the submitted ordering values for records via AJAX.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.0.2
-	 *
-	 * @throws  Exception
-	 */
-	public function saveOrderAjax()
-	{
-		// Get the input
-		$pks   = $this->input->post->get('cid', array(), 'array');
-		$order = $this->input->post->get('order', array(), 'array');
-
-		// Sanitize the input
-		ArrayHelper::toInteger($pks);
-		ArrayHelper::toInteger($order);
-
-		// Get the model
-		$model = $this->getModel();
-
-		// Save the ordering
-		$return = $model->saveorder($pks, $order);
-
-		if ($return)
-		{
-			echo "1";
-		}
-
-		// Close the application
-		Factory::getApplication()->close();
-	}
 }

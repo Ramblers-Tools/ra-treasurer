@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS `#__ra_bookings` (
 `date_paid` DATE NULL DEFAULT NULL,
 `payment_created_by` INT NULL DEFAULT NULL,
 `payment_created` DATETIME NULL DEFAULT NULL,
-`payment_modified_by` INT NULL DEFAULT NULL,
 `payment_modified` DATETIME NULL DEFAULT NULL,
+`payment_modified_by` INT NULL DEFAULT NULL,
 PRIMARY KEY (`id`)
 ,KEY `idx_state` (`state`)
 ,KEY `idx_checked_out` (`checked_out`)

@@ -1,13 +1,11 @@
 <?php
+
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 24/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\Model;
+
 // No direct access.
 defined('_JEXEC') or die;
 
@@ -28,253 +26,150 @@ use \Joomla\Database\DatabaseInterface;
  *
  * @since  1.0.2
  */
-class PaymentModel extends AdminModel
-{
-	use VersionableModelTrait;
+class PaymentModel extends AdminModel {
 
-	/**
-	 * @var    string  The prefix to use with controller messages.
-	 *
-	 * @since  1.0.2
-	 */
-	protected $text_prefix = 'COM_RA_TREASURER';
+    use VersionableModelTrait;
 
-	/**
-	 * @var    string  Alias to manage history control
-	 *
-	 * @since  1.0.2
-	 */
-	public $typeAlias = 'com_ra_treasurer.payment';
+    /**
+     * @var    string  The prefix to use with controller messages.
+     *
+     * @since  1.0.2
+     */
+    protected $text_prefix = 'COM_RA_TREASURER';
 
-	/**
-	 * @var    null  Item data
-	 *
-	 * @since  1.0.2
-	 */
-	protected $item = null;
+    /**
+     * @var    string  Alias to manage history control
+     *
+     * @since  1.0.2
+     */
+    public $typeAlias = 'com_ra_treasurer.payment';
 
-	
-	
+    /**
+     * @var    null  Item data
+     *
+     * @since  1.0.2
+     */
+    protected $item = null;
 
-	/**
-	 * Returns a reference to the a Table object, always creating it.
-	 *
-	 * @param   string  $type    The table type to instantiate
-	 * @param   string  $prefix  A prefix for the table class name. Optional.
-	 * @param   array   $config  Configuration array for model. Optional.
-	 *
-	 * @return  Table    A database object
-	 *
-	 * @since   1.0.2
-	 */
-	public function getTable($type = 'Payment', $prefix = 'Administrator', $config = array())
-	{
-		return parent::getTable($type, $prefix, $config);
-	}
+    /**
+     * Returns a reference to the a Table object, always creating it.
+     *
+     * @param   string  $type    The table type to instantiate
+     * @param   string  $prefix  A prefix for the table class name. Optional.
+     * @param   array   $config  Configuration array for model. Optional.
+     *
+     * @return  Table    A database object
+     *
+     * @since   1.0.2
+     */
+    public function getTable($type = 'Payment', $prefix = 'Administrator', $config = array()) {
+        return parent::getTable($type, $prefix, $config);
+    }
 
-	/**
-	 * Method to get the record form.
-	 *
-	 * @param   array    $data      An optional array of data for the form to interogate.
-	 * @param   boolean  $loadData  True if the form is to load its own data (default case), false if not.
-	 *
-	 * @return  \JForm|boolean  A \JForm object on success, false on failure
-	 *
-	 * @since   1.0.2
-	 */
-	public function getForm($data = array(), $loadData = true)
-	{
-		// Initialise variables.
-		$app = Factory::getApplication();
+    /**
+     * Method to get the record form.
+     *
+     * @param   array    $data      An optional array of data for the form to interogate.
+     * @param   boolean  $loadData  True if the form is to load its own data (default case), false if not.
+     *
+     * @return  \JForm|boolean  A \JForm object on success, false on failure
+     *
+     * @since   1.0.2
+     */
+    public function getForm($data = array(), $loadData = true) {
+        // Initialise variables.
+        $app = Factory::getApplication();
 
-		// Get the form.
-		$form = $this->loadForm(
-								'com_ra_treasurer.payment', 
-								'payment',
-								array(
-									'control' => 'jform',
-									'load_data' => $loadData 
-								)
-							);
+        // Get the form.
+        $form = $this->loadForm(
+                'com_ra_treasurer.payment',
+                'payment',
+                array(
+                    'control' => 'jform',
+                    'load_data' => $loadData
+                )
+        );
 
-		
+        if (empty($form)) {
+            return false;
+        }
 
-		if (empty($form))
-		{
-			return false;
-		}
+        return $form;
+    }
 
-		return $form;
-	}
+    /**
+     * Method to get the data that should be injected in the form.
+     *
+     * @return  mixed  The data for the form.
+     *
+     * @since   1.0.2
+     */
+    protected function loadFormData() {
+        // Check the session for previously entered form data.
+        $data = Factory::getApplication()->getUserState('com_ra_treasurer.edit.payment.data', array());
 
-	
+        if (empty($data)) {
+            if ($this->item === null) {
+                $this->item = $this->getItem();
+            }
 
-	/**
-	 * Method to get the data that should be injected in the form.
-	 *
-	 * @return  mixed  The data for the form.
-	 *
-	 * @since   1.0.2
-	 */
-	protected function loadFormData()
-	{
-		// Check the session for previously entered form data.
-		$data = Factory::getApplication()->getUserState('com_ra_treasurer.edit.payment.data', array());
+            $data = $this->item;
+        }
 
-		if (empty($data))
-		{
-			if ($this->item === null)
-			{
-				$this->item = $this->getItem();
-			}
+        return $data;
+    }
 
-			$data = $this->item;
-			
-		}
+    /**
+     * Method to get a single record.
+     *
+     * @param   integer  $pk  The id of the primary key.
+     *
+     * @return  mixed    Object on success, false on failure.
+     *
+     * @since   1.0.2
+     */
+    public function getItem($pk = null) {
 
-		return $data;
-	}
+        if ($item = parent::getItem($pk)) {
+            $bookingId = (int) $item->id;
 
-	/**
-	 * Method to get a single record.
-	 *
-	 * @param   integer  $pk  The id of the primary key.
-	 *
-	 * @return  mixed    Object on success, false on failure.
-	 *
-	 * @since   1.0.2
-	 */
-	public function getItem($pk = null)
-	{
-		
-			if ($item = parent::getItem($pk))
-			{
-				if (isset($item->params))
-				{
-					$item->params = json_encode($item->params);
-				}
-				
-				// Do any procesing on fields here if needed
-			}
+            if ($bookingId > 0) {
+                $db = $this->getDatabase();
+                $query = $db->getQuery(true)
+                        ->select($db->quoteName('e.title', 'event_title'))
+                        ->select($db->quoteName('e.event_date'))
+                        ->select($db->quoteName('p.preferred_name', 'member_name'))
+                        ->from($db->quoteName('#__ra_bookings', 'b'))
+                        ->join('INNER', $db->quoteName('#__ra_events', 'e')
+                                . ' ON ' . $db->quoteName('e.id') . ' = ' . $db->quoteName('b.event_id'))
+                        ->join('LEFT', $db->quoteName('#__ra_profiles', 'p')
+                                . ' ON ' . $db->quoteName('p.id') . ' = ' . $db->quoteName('b.user_id'))
+                        ->where($db->quoteName('b.id') . ' = ' . $bookingId);
 
-			return $item;
-		
-	}
+                $context = $db->setQuery($query)->loadObject();
 
-	/**
-	 * Method to duplicate an Payment
-	 *
-	 * @param   array  &$pks  An array of primary key IDs.
-	 *
-	 * @return  boolean  True if successful.
-	 *
-	 * @throws  Exception
-	 */
-	public function duplicate(&$pks)
-	{
-		$app = Factory::getApplication();
-		$user = $app->getIdentity();
-        $dispatcher = $this->getDispatcher();
+                if ($context !== null) {
+                    $item->event_title = $context->event_title;
+                    $item->event_date = $context->event_date;
+                    $item->member_name = $context->member_name;
+                }
+            }
+        }
 
-		// Access checks.
-		if (!$user->authorise('core.create', 'com_ra_treasurer'))
-		{
-			throw new \Exception(Text::_('JERROR_CORE_CREATE_NOT_PERMITTED'));
-		}
+        return $item;
+    }
 
-		$context    = $this->option . '.' . $this->name;
+    /**
+     * Prepare and sanitise the table prior to saving.
+     *
+     * @param   Table  $table  Table Object
+     *
+     * @return  void
+     *
+     * @since   1.0.2
+     */
+    protected function prepareTable($table) {
+        // Payment fields are held on an existing #__ra_bookings record.
+    }
 
-		// Include the plugins for the save events.
-		PluginHelper::importPlugin($this->events_map['save']);
-
-		$table = $this->getTable();
-
-		foreach ($pks as $pk)
-		{
-			
-				if ($table->load($pk, true))
-				{
-					// Reset the id to create a new record.
-					$table->id = 0;
-
-					if (!$table->check())
-					{
-						throw new \Exception($table->getError());
-					}
-					
-
-					// Create the before save event.
-					$beforeSaveEvent = AbstractEvent::create(
-						$this->event_before_save,
-						[
-							'context' => $context,
-							'subject' => $table,
-							'isNew'   => true,
-							'data'    => $table,
-						]
-					);
-
-					// Trigger the before save event.
-					$dispatchResult = Factory::getApplication()->getDispatcher()->dispatch($this->event_before_save, $beforeSaveEvent);
-
-					// Check if dispatch result is an array and handle accordingly
-					$result = isset($dispatchResult['result']) ? $dispatchResult['result'] : [];
-
-					// Proceed with your logic
-					if (in_array(false, $result, true) || !$table->store()) {
-						throw new \Exception($table->getError());
-					}
-
-					// Trigger the after save event.
-					Factory::getApplication()->getDispatcher()->dispatch(
-						$this->event_after_save,
-						AbstractEvent::create(
-							$this->event_after_save,
-							[
-								'context'    => $context,
-								'subject'    => $table,
-								'isNew'      => true,
-								'data'       => $table,
-							]
-						)
-					);			
-				}
-				else
-				{
-					throw new \Exception($table->getError());
-				}
-			
-		}
-
-		// Clean cache
-		$this->cleanCache();
-
-		return true;
-	}
-
-	/**
-	 * Prepare and sanitise the table prior to saving.
-	 *
-	 * @param   Table  $table  Table Object
-	 *
-	 * @return  void
-	 *
-	 * @since   1.0.2
-	 */
-	protected function prepareTable($table)
-	{
-		jimport('joomla.filter.output');
-
-		if (empty($table->id))
-		{
-			// Set ordering to the last item if not set
-			if (@$table->ordering === '')
-			{
-				$db = Factory::getContainer()->get(DatabaseInterface::class);
-				$db->setQuery('SELECT MAX(ordering) FROM #__ra_payments');
-				$max             = $db->loadResult();
-				$table->ordering = $max + 1;
-			}
-		}
-	}
 }
