@@ -11,7 +11,7 @@
         <downloads>
             <downloadurl type="full" format="zip">https://github.com/Ramblers-Tools/ra-treasurer/releases/download/v1.0.0/pkg_ra_treasurer-1.0.0.zip</downloadurl>
         </downloads>
-        <sha256></sha256>
+        <sha256>9e6b7bfdd53e388d5a636fcb301c575ec219ac196e9046e3b03348cad1b14faf</sha256>
         <targetplatform name="joomla" version="5.*"/>
     </update>
 </updates>
