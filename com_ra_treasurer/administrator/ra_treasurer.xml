@@ -2,13 +2,13 @@
 <extension type="component" version="4.0" method="upgrade">
     <name>RA Treasurer</name>
     <element>com_ra_treasurer</element>
-    <creationDate>03/09/2026</creationDate>
+    <creationDate>30/09/2026</creationDate>
     <copyright>2026 Ramblers Tools</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <author>Charlie Bigley</author>
     <authorEmail>support@ramblers.tools</authorEmail>
     <authorUrl>https://ramblers.tools</authorUrl>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <description>Treasurer tools for Ramblers groups</description>
     <namespace path="src">Ramblers\Component\Ra_treasurer</namespace>
     <scriptfile>script.php</scriptfile>
