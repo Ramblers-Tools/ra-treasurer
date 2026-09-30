@@ -1,178 +1,158 @@
 <?php
+
 /**
- * @version    CVS: 1.0.0
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 20/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\View\Reports;
+
 // No direct access
 defined('_JEXEC') or die;
 
 use \Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
-use \Ramblers\Component\Ra_treasurer\Administrator\Helper\Ra_treasurerHelper;
 use \Joomla\CMS\Toolbar\Toolbar;
 use \Joomla\CMS\Toolbar\ToolbarHelper;
 use \Joomla\CMS\Language\Text;
 use \Joomla\Component\Content\Administrator\Extension\ContentComponent;
 use \Joomla\CMS\Form\Form;
 use \Joomla\CMS\HTML\Helpers\Sidebar;
+use Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
+
 /**
  * View class for a list of Reports.
  *
  * @since  1.0.0
  */
-class HtmlView extends BaseHtmlView
-{
-	protected $items;
+class HtmlView extends BaseHtmlView {
 
-	protected $pagination;
+    protected $items;
+    protected $pagination;
+    protected $state;
 
-	protected $state;
+    /**
+     * Display the view
+     *
+     * @param   string  $tpl  Template name
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    public function display($tpl = null) {
+        $this->state = $this->get('State');
 
-	/**
-	 * Display the view
-	 *
-	 * @param   string  $tpl  Template name
-	 *
-	 * @return void
-	 *
-	 * @throws Exception
-	 */
-	public function display($tpl = null)
-	{
-		$this->state = $this->get('State');
-		
-		
+        // Check for errors.
+        if (count($errors = $this->get('Errors'))) {
+            throw new \Exception(implode("\n", $errors));
+        }
 
-		// Check for errors.
-		if (count($errors = $this->get('Errors')))
-		{
-			throw new \Exception(implode("\n", $errors));
-		}
+        $this->addToolbar();
 
-		$this->addToolbar();
+        $this->sidebar = Sidebar::render();
+        parent::display($tpl);
+    }
 
-		$this->sidebar = Sidebar::render();
-		parent::display($tpl);
-	}
+    /**
+     * Add the page title and toolbar.
+     *
+     * @return  void
+     *
+     * @since   1.0.0
+     */
+    protected function addToolbar() {
+        $state = $this->get('State');
+        $canDo = ToolsHelper::getActions();
 
-	/**
-	 * Add the page title and toolbar.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.0.0
-	 */
-	protected function addToolbar()
-	{
-		$state = $this->get('State');
-		$canDo = Ra_treasurerHelper::getActions();
+        ToolbarHelper::title(Text::_('COM_RA_TREASURER_TITLE_REPORTS'), "generic");
 
-		ToolbarHelper::title(Text::_('COM_RA_TREASURER_TITLE_REPORTS'), "generic");
+        $toolbar = Toolbar::getInstance('toolbar');
 
-		$toolbar = Toolbar::getInstance('toolbar');
+        // Check if the form exists before showing the add/edit buttons
+        $formPath = JPATH_COMPONENT_ADMINISTRATOR . '/src/View/Reports';
 
-		// Check if the form exists before showing the add/edit buttons
-		$formPath = JPATH_COMPONENT_ADMINISTRATOR . '/src/View/Reports';
+        if (file_exists($formPath)) {
+            if ($canDo->get('core.create')) {
+                $toolbar->addNew('report.add');
+            }
+        }
 
-		if (file_exists($formPath))
-		{
-			if ($canDo->get('core.create'))
-			{
-				$toolbar->addNew('report.add');
-			}
-		}
+        if ($canDo->get('core.edit.state')) {
+            $dropdown = $toolbar->dropdownButton('status-group')
+                    ->text('JTOOLBAR_CHANGE_STATUS')
+                    ->toggleSplit(false)
+                    ->icon('fas fa-ellipsis-h')
+                    ->buttonClass('btn btn-action')
+                    ->listCheck(true);
 
-		if ($canDo->get('core.edit.state'))
-		{
-			$dropdown = $toolbar->dropdownButton('status-group')
-				->text('JTOOLBAR_CHANGE_STATUS')
-				->toggleSplit(false)
-				->icon('fas fa-ellipsis-h')
-				->buttonClass('btn btn-action')
-				->listCheck(true);
+            $childBar = $dropdown->getChildToolbar();
 
-			$childBar = $dropdown->getChildToolbar();
+            if (isset($this->items[0]->state)) {
+                $childBar->publish('reports.publish')->listCheck(true);
+                $childBar->unpublish('reports.unpublish')->listCheck(true);
+                $childBar->archive('reports.archive')->listCheck(true);
+            } elseif (isset($this->items[0])) {
+                // If this component does not use state then show a direct delete button as we can not trash
+                $toolbar->delete('reports.delete')
+                        ->text('JTOOLBAR_EMPTY_TRASH')
+                        ->message('JGLOBAL_CONFIRM_DELETE')
+                        ->listCheck(true);
+            }
 
-			if (isset($this->items[0]->state))
-			{
-				$childBar->publish('reports.publish')->listCheck(true);
-				$childBar->unpublish('reports.unpublish')->listCheck(true);
-				$childBar->archive('reports.archive')->listCheck(true);
-			}
-			elseif (isset($this->items[0]))
-			{
-				// If this component does not use state then show a direct delete button as we can not trash
-				$toolbar->delete('reports.delete')
-				->text('JTOOLBAR_EMPTY_TRASH')
-				->message('JGLOBAL_CONFIRM_DELETE')
-				->listCheck(true);
-			}
+            $childBar->standardButton('duplicate')
+                    ->text('JTOOLBAR_DUPLICATE')
+                    ->icon('fas fa-copy')
+                    ->task('reports.duplicate')
+                    ->listCheck(true);
 
-			$childBar->standardButton('duplicate')
-				->text('JTOOLBAR_DUPLICATE')
-				->icon('fas fa-copy')
-				->task('reports.duplicate')
-				->listCheck(true);
+            if (isset($this->items[0]->checked_out)) {
+                $childBar->checkin('reports.checkin')->listCheck(true);
+            }
 
-			if (isset($this->items[0]->checked_out))
-			{
-				$childBar->checkin('reports.checkin')->listCheck(true);
-			}
+            if (isset($this->items[0]->state)) {
+                $childBar->trash('reports.trash')->listCheck(true);
+            }
+        }
 
-			if (isset($this->items[0]->state))
-			{
-				$childBar->trash('reports.trash')->listCheck(true);
-			}
-		}
 
-		
 
-		// Show trash and delete for components that uses the state field
-		if (isset($this->items[0]->state))
-		{
+        // Show trash and delete for components that uses the state field
+        if (isset($this->items[0]->state)) {
 
-			if ($this->state->get('filter.state') == ContentComponent::CONDITION_TRASHED && $canDo->get('core.delete'))
-			{
-				$toolbar->delete('reports.delete')
-					->text('JTOOLBAR_EMPTY_TRASH')
-					->message('JGLOBAL_CONFIRM_DELETE')
-					->listCheck(true);
-			}
-		}
+            if ($this->state->get('filter.state') == ContentComponent::CONDITION_TRASHED && $canDo->get('core.delete')) {
+                $toolbar->delete('reports.delete')
+                        ->text('JTOOLBAR_EMPTY_TRASH')
+                        ->message('JGLOBAL_CONFIRM_DELETE')
+                        ->listCheck(true);
+            }
+        }
 
-		if ($canDo->get('core.admin'))
-		{
-			$toolbar->preferences('com_ra_treasurer');
-		}
+        if ($canDo->get('core.admin')) {
+            $toolbar->preferences('com_ra_treasurer');
+        }
 
-		// Set sidebar action
-		Sidebar::setAction('index.php?option=com_ra_treasurer&view=reports');
-	}
-	
-	/**
-	 * Method to order fields 
-	 *
-	 * @return void 
-	 */
-	protected function getSortFields()
-	{
-		return array(
-		);
-	}
+        // Set sidebar action
+        Sidebar::setAction('index.php?option=com_ra_treasurer&view=reports');
+    }
 
-	/**
-	 * Check if state is set
-	 *
-	 * @param   mixed  $state  State
-	 *
-	 * @return bool
-	 */
-	public function getState($state)
-	{
-		return isset($this->state->{$state}) ? $this->state->{$state} : false;
-	}
+    /**
+     * Method to order fields
+     *
+     * @return void
+     */
+    protected function getSortFields() {
+        return array(
+        );
+    }
+
+    /**
+     * Check if state is set
+     *
+     * @param   mixed  $state  State
+     *
+     * @return bool
+     */
+    public function getState($state) {
+        return isset($this->state->{$state}) ? $this->state->{$state} : false;
+    }
+
 }

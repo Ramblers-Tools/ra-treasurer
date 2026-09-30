@@ -1,11 +1,7 @@
 <?php
 
 /**
- * @version    CVS: 1.0.0
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 20/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Service;
@@ -31,67 +27,60 @@ use Joomla\CMS\Component\ComponentHelper;
  * Class Ra_treasurerRouter
  *
  */
-class Router extends RouterView
-{
-	private $noIDs;
-	/**
-	 * The category factory
-	 *
-	 * @var    CategoryFactoryInterface
-	 *
-	 * @since  1.0.0
-	 */
-	private $categoryFactory;
+class Router extends RouterView {
 
-	/**
-	 * The category cache
-	 *
-	 * @var    array
-	 *
-	 * @since  1.0.0
-	 */
-	private $categoryCache = [];
+    private $noIDs;
 
-	public function __construct(SiteApplication $app, AbstractMenu $menu, CategoryFactoryInterface $categoryFactory, DatabaseInterface $db)
-	{
-		$params = ComponentHelper::getParams('com_ra_treasurer');
-		$this->noIDs = (bool) $params->get('sef_ids');
-		$this->categoryFactory = $categoryFactory;
-		
-		
-			$bookings = new RouterViewConfiguration('bookings');
-			$this->registerView($bookings);
+    /**
+     * The category factory
+     *
+     * @var    CategoryFactoryInterface
+     *
+     * @since  1.0.0
+     */
+    private $categoryFactory;
 
-		parent::__construct($app, $menu);
+    /**
+     * The category cache
+     *
+     * @var    array
+     *
+     * @since  1.0.0
+     */
+    private $categoryCache = [];
 
-		$this->attachRule(new MenuRules($this));
-		$this->attachRule(new StandardRules($this));
-		$this->attachRule(new NomenuRules($this));
-	}
+    public function __construct(SiteApplication $app, AbstractMenu $menu, CategoryFactoryInterface $categoryFactory, DatabaseInterface $db) {
+        $params = ComponentHelper::getParams('com_ra_treasurer');
+        $this->noIDs = (bool) $params->get('sef_ids');
+        $this->categoryFactory = $categoryFactory;
 
+        $bookings = new RouterViewConfiguration('bookings');
+        $this->registerView($bookings);
 
-	
+        parent::__construct($app, $menu);
 
-	
+        $this->attachRule(new MenuRules($this));
+        $this->attachRule(new StandardRules($this));
+        $this->attachRule(new NomenuRules($this));
+    }
 
-	/**
-	 * Method to get categories from cache
-	 *
-	 * @param   array  $options   The options for retrieving categories
-	 *
-	 * @return  CategoryInterface  The object containing categories
-	 *
-	 * @since   1.0.0
-	 */
-	private function getCategories(array $options = []): CategoryInterface
-	{
-		$key = serialize($options);
+    /**
+     * Method to get categories from cache
+     *
+     * @param   array  $options   The options for retrieving categories
+     *
+     * @return  CategoryInterface  The object containing categories
+     *
+     * @since   1.0.0
+     */
+    private function getCategories(array $options = []): CategoryInterface {
+        $key = serialize($options);
 
-		if (!isset($this->categoryCache[$key]))
-		{
-			$this->categoryCache[$key] = $this->categoryFactory->createCategory($options);
-		}
+        if (!isset($this->categoryCache[$key])) {
+            $this->categoryCache[$key] = $this->categoryFactory->createCategory($options);
+        }
 
-		return $this->categoryCache[$key];
-	}
+        return $this->categoryCache[$key];
+    }
+
 }

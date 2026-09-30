@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" version="4.0" method="upgrade">
+    <name>RA Treasurer</name>
+    <element>com_ra_treasurer</element>
+    <creationDate>30/09/2026</creationDate>
+    <copyright>2026 Ramblers Tools</copyright>
+    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+    <author>Charlie Bigley</author>
+    <authorEmail>support@ramblers.tools</authorEmail>
+    <authorUrl>https://ramblers.tools</authorUrl>
+    <version>1.0.3</version>
+    <description>Treasurer tools for Ramblers groups</description>
+    <namespace path="src">Ramblers\Component\Ra_treasurer</namespace>
+    <scriptfile>script.php</scriptfile>
+    <files folder="site">
+        <folder>src</folder>
+        <folder>forms</folder>
+        <folder>tmpl</folder>
+    </files>
+    <languages folder="site/languages">       
+			<language tag="en-GB">en-GB/com_ra_treasurer.ini</language>
+    </languages>
+    <administration>
+        <menu link="option=com_ra_treasurer&amp;view=payments">RA Treasurer</menu>
+        <submenu>
+            <menu link="option=com_ra_treasurer&amp;view=claimtypes">Claim types</menu>
+        </submenu>
+        <files folder="administrator">
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+            <folder>forms</folder>
+            <folder>src</folder>
+            <folder>tmpl</folder>
+            <folder>services</folder>
+            <folder>presets</folder>
+        </files>
+        <languages folder="administrator/languages">         
+			<language tag="en-GB">en-GB/com_ra_treasurer.ini</language>
+			<language tag="en-GB">en-GB/com_ra_treasurer.sys.ini</language>
+        </languages>
+    </administration>
+    <config>
+        <fields name="params">
+            <fieldset name="component">
+                <field name="save_history" default="0" />
+            </fieldset>
+        </fields>
+    </config>
+    <plugins>
+    </plugins>
+    <updateservers>
+        <server type="extension" name="RA Treasurer Update Server">https://raw.githubusercontent.com/Ramblers-Tools/ra-treasurer/main/updates/pkg_ra_treasurer.xml</server>
+    </updateservers>
+</extension>

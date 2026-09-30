@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fields name="filter">
+        <field name="search" type="text" hint="COM_RA_TREASURER_SEARCH_FILTER_SUBMIT"
+               label="COM_RA_TREASURER_EVENTS_SEARCH_FILTER_DESC"
+               class="js-stools-search-string" />
+
+        
+
+    </fields>
+    <fields name="list">
+
+        <field name="fullordering"
+               type="list"
+               label="COM_RA_TREASURER_LIST_FULL_ORDERING"
+               description="COM_RA_TREASURER_LIST_FULL_ORDERING_DESC"
+               onchange="this.form.submit();"
+               default="a.event_date DESC"
+        >
+            <option value="">JGLOBAL_SORT_BY</option>
+            <option value="a.event_date ASC">Event date ASC</option>
+            <option value="a.event_date DESC">Event date DESC</option>
+            <option value="a.title ASC">Event title ASC</option>
+            <option value="a.title DESC">Event title DESC</option>
+            <option value="p.preferred_name ASC">Organiser ASC</option>
+            <option value="p.preferred_name DESC">Organiser DESC</option>
+            <option value="a.max_bookings ASC">Total places ASC</option>
+            <option value="a.max_bookings DESC">Total places DESC</option>
+            <option value="num_confirmed ASC">Confirmed places ASC</option>
+            <option value="num_confirmed DESC">Confirmed places DESC</option>
+            <option value="total_paid ASC">Total paid ASC</option>
+            <option value="total_paid DESC">Total paid DESC</option>
+
+        </field>
+
+       <field name="limit"
+               type="limitbox"
+               label="COM_RA_TREASURER_LIST_LIMIT"
+               description="COM_RA_TREASURER_LIST_LIMIT_DESC"
+               class="input-mini"
+               default="25"
+               onchange="this.form.submit();"
+        />
+
+    </fields>
+</form>

@@ -1,10 +1,7 @@
 <?php
+
 /**
- * @version    CVS: 1.0.0
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 20/08/26 created by component-creator
  */
 
 namespace Ramblers\Component\Ra_treasurer\Administrator\Extension;
@@ -30,38 +27,37 @@ use Joomla\CMS\Categories\CategoryServiceInterface;
  *
  * @since  1.0.0
  */
-class Ra_treasurerComponent extends MVCComponent implements RouterServiceInterface, BootableExtensionInterface, CategoryServiceInterface
-{
-	use AssociationServiceTrait;
-	use RouterServiceTrait;
-	use HTMLRegistryAwareTrait;
-	use CategoryServiceTrait, TagServiceTrait {
-		CategoryServiceTrait::getTableNameForSection insteadof TagServiceTrait;
-		CategoryServiceTrait::getStateColumnForSection insteadof TagServiceTrait;
-	}
+class Ra_treasurerComponent extends MVCComponent implements RouterServiceInterface, BootableExtensionInterface, CategoryServiceInterface {
 
-	/** @inheritdoc  */
-	public function boot(ContainerInterface $container)
-	{
-		$db = $container->get('DatabaseDriver');
-		$this->getRegistry()->register('ra_treasurer', new RA_TREASURER($db));
-	}
+    use AssociationServiceTrait;
+    use RouterServiceTrait;
+    use HTMLRegistryAwareTrait;
+    use CategoryServiceTrait,
+        TagServiceTrait {
+        CategoryServiceTrait::getTableNameForSection insteadof TagServiceTrait;
+        CategoryServiceTrait::getStateColumnForSection insteadof TagServiceTrait;
+    }
 
-	
-/**
- * Returns the table for the count items functions for the given section.
-	 *
-	 * @param   string    The section
-	 *
-	 * * @return  string|null
-	 *
-	 * @since   4.0.0
-	 */
-	    protected function getTableNameForSection(?string $section = null)            
-	{
-	}
-	
-	/**
+    /** @inheritdoc  */
+    public function boot(ContainerInterface $container) {
+        $db = $container->get('DatabaseDriver');
+        $this->getRegistry()->register('ra_treasurer', new RA_TREASURER($db));
+    }
+
+    /**
+     * Returns the table for the count items functions for the given section.
+     *
+     * @param   string    The section
+     *
+     * * @return  string|null
+     *
+     * @since   4.0.0
+     */
+    protected function getTableNameForSection(?string $section = null) {
+
+    }
+
+    /**
      * Adds Count Items for Category Manager.
      *
      * @param   \stdClass[]  $items    The category objects
@@ -71,7 +67,8 @@ class Ra_treasurerComponent extends MVCComponent implements RouterServiceInterfa
      *
      * @since   4.0.0
      */
-    public function countItems(array $items, string $section)
-    {
-	}
+    public function countItems(array $items, string $section) {
+
+    }
+
 }

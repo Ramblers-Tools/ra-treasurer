@@ -2,7 +2,7 @@
 <form>
     <fields name="filter">
         <field name="search" type="text" hint="COM_RA_TREASURER_SEARCH_FILTER_SUBMIT"
-               label="COM_USERS_FILTER_SEARCH_DESC"
+               label="COM_RA_TREASURER_BOOKINGS_SEARCH_FILTER_DESC"
                class="js-stools-search-string" />
 
         
@@ -15,10 +15,19 @@
                label="COM_RA_TREASURER_LIST_FULL_ORDERING"
                description="COM_RA_TREASURER_LIST_FULL_ORDERING_DESC"
                onchange="this.form.submit();"
-               default="a.id DESC"
+               default="e.event_date ASC"
         >
             <option value="">JGLOBAL_SORT_BY</option>
-            <option value="a.id ASC">COM_RA_TREASURER_ID_ASC</option><option value="a.id DESC">COM_RA_TREASURER_ID_DESC</option><option value="a.member_name ASC">COM_RA_TREASURER_MEMBER_NAME_ASC</option><option value="a.member_name DESC">COM_RA_TREASURER_MEMBER_NAME_DESC</option><option value="a.event_name ASC">COM_RA_TREASURER_EVENT_NAME_ASC</option><option value="a.event_name DESC">COM_RA_TREASURER_EVENT_NAME_DESC</option><option value="a.amount_due ASC">COM_RA_TREASURER_AMOUNT_DUE_ASC</option><option value="a.amount_due DESC">COM_RA_TREASURER_AMOUNT_DUE_DESC</option><option value="a.event_date ASC">COM_RA_TREASURER_EVENT_DATE_ASC</option><option value="a.event_date DESC">COM_RA_TREASURER_EVENT_DATE_DESC</option><option value="a.created ASC">COM_RA_TREASURER_CREATED_ASC</option><option value="a.created DESC">COM_RA_TREASURER_CREATED_DESC</option>
+            <option value="e.event_date ASC">Event date ASC</option>
+            <option value="e.event_date DESC">Event date DESC</option>
+            <option value="e.title ASC">Event title ASC</option>
+            <option value="e.title DESC">Event date DESC</option>
+            <option value="a.created ASC">Booking date ASC</option>
+            <option value="a.created DESC">Booking date DESC</option>
+            <option value="p.preferred_name ASC">Member name ASC</option>
+            <option value="p.preferred_name DESC">Member name DESC</option>
+            <option value="a.num_places ASC">Num places ASC</option>
+            <option value="a.num_places DESC">Num places DESC</option>
 
         </field>
 

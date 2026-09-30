@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fields name="filter">
+        <field
+            name="search"
+            type="text"
+            label="Search"
+            description="Search claim type descriptions or enter id: followed by an ID"
+            hint="Search"
+            class="js-stools-search-string"
+        />
+        <field
+            name="state"
+            type="list"
+            label="Status"
+            class="js-select-submit-on-change"
+        >
+            <option value="">All statuses</option>
+            <option value="1">Published</option>
+            <option value="0">Unpublished</option>
+        </field>
+    </fields>
+    <fields name="list">
+        <field
+            name="fullordering"
+            type="list"
+            label="Sort by"
+            default="a.ordering ASC"
+            class="js-select-submit-on-change"
+        >
+            <option value="a.ordering ASC">Ordering ascending</option>
+            <option value="a.ordering DESC">Ordering descending</option>
+            <option value="a.description ASC">Description ascending</option>
+            <option value="a.description DESC">Description descending</option>
+            <option value="a.state ASC">Status ascending</option>
+            <option value="a.state DESC">Status descending</option>
+            <option value="a.id ASC">ID ascending</option>
+            <option value="a.id DESC">ID descending</option>
+        </field>
+        <field
+            name="limit"
+            type="limitbox"
+            label="Records per page"
+            default="25"
+            class="js-select-submit-on-change"
+        />
+    </fields>
+</form>

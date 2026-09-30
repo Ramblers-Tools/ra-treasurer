@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="Payments" option="View">
+        <message>
+                        <![CDATA[List of payments made]]>
+        </message>
+	</layout>
+	
+</metadata>
