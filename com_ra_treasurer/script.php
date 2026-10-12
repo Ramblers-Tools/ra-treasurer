@@ -17,6 +17,8 @@ use Joomla\CMS\Log\Log;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Exception\FilesystemException;
 
 class Com_Ra_treasurerInstallerScript {
 
@@ -27,6 +29,7 @@ class Com_Ra_treasurerInstallerScript {
     private $minimumJoomlaVersion = '4.0';
     private $minimumPHPVersion = JOOMLA_MINIMUM_PHP;
     private $reconfigure_message;
+    private $original_version;
 
     function buildButton($url, $text, $newWindow = 0, $colour = '') {
         if ($colour == '') {
@@ -306,10 +309,19 @@ class Com_Ra_treasurerInstallerScript {
     }
 
     public function postflight($type, $parent) {
-        $this->message('Postflight RA Treasurer (com_ra_treasurer).');
         if ($type == 'uninstall') {
             return true;
         }
+        $new_version = $this->getVersion();
+        if ($this->original_version !== $new_version) {
+            echo '<p>com_ra_treasurer has been upgraded from ' . $this->original_version . ' to ' . $new_version . '</p>';
+        } else {
+            echo '<p>com_ra_treasurer is unchanged at ' . $new_version . '</p>';
+        }
+        if ($this->reconfigure_message == true) {
+            $this->red('Please review and update the configuration settings for com_ra_treasurer.');
+        }
+
         echo '<b>Useful links</b><br>';
         echo $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', 'granite') . '<br>';
         echo $this->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure');
@@ -328,16 +340,16 @@ class Com_Ra_treasurerInstallerScript {
 
         if (ComponentHelper::isEnabled('com_ra_treasurer', true)) {
             try {
-                $currentVersion = $this->getInstalledComponentVersion();
+                $this->original_version = $this->getInstalledComponentVersion();
             } catch (\RuntimeException $exception) {
                 return $this->fail($exception->getMessage());
             }
 
-            if ($currentVersion === null) {
+            if ($this->original_version === null) {
                 return $this->fail('Installer could not find readable version information for com_ra_treasurer.');
             }
 
-            $this->message('com_ra_treasurer already present, version=' . $currentVersion . '.');
+            $this->message('com_ra_treasurer already present, version=' . $this->original_version . '.');
         } else {
             return $this->fail('Installer could not find the existing com_ra_treasurer installation.');
         }
@@ -355,6 +367,34 @@ class Com_Ra_treasurerInstallerScript {
         if (!$this->checkMinimumComponentVersion('com_ra_tools', self::MINIMUM_TOOLS_VERSION)) {
             return false;
         }
+
+        if (version_compare($this->original_version, '1.0.4', 'le')) {
+
+            // table ra_guest_bookings
+            $details = '(
+            `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `booking_id` INT  NOT NULL,
+            `name` VARCHAR(100) NOT NULL,
+            `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;';
+            $this->checkTable('ra_guest_bookings', $details);
+
+            $this->checkColumn('ra_events', 'requires_payment', 'A', 'INT DEFAULT "0" AFTER bookable; ');
+            $this->checkColumn('ra_events', 'requires_ice', 'A', 'INT DEFAULT "0" AFTER requires_payment; ');
+
+            $this->checkColumn('ra_events', 'max_bookings', 'A', 'INT NULL AFTER num_bookings; ');
+            $this->checkColumn('ra_events', 'max_guests', 'A', 'INT DEFAULT "0" AFTER max_bookings; ');
+            $this->checkColumn('ra_events', 'waiting_list_enabled', 'A', 'INT DEFAULT "0" AFTER max_guests; ');
+            $this->checkColumn('ra_events', 'multi_guest_enabled', 'A', 'INT DEFAULT "0" AFTER waiting_list_enabled; ');
+            $this->checkColumn('ra_events', 'multi_bookings_enabled', 'A', 'INT DEFAULT "0" AFTER multi_guest_enabled; ');       
+
+            $this->checkColumn('ra_mail_shots', 'send_after', 'A', 'DATETIME NULL AFTER processing_started; ');
+            $this->checkColumn('ra_mail_shots', 'is_scheduled', 'A', 'TINYINT DEFAULT "0" AFTER send_after; ');
+            $this->checkColumn('ra_mail_shots', 'cancelled', 'A', 'TINYINT DEFAULT "0" AFTER is_scheduled; ');
+            $this->checkColumn('ra_mail_shots', 'reply_to', 'A', 'VARCHAR(255) NULL AFTER cancelled; ');
+        }
+     
         return true;
     }
 
