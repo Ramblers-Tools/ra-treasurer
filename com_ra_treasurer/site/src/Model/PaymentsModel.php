@@ -2,7 +2,8 @@
 
 /**
  * 20/08/26 created by component-creator
- * 25/08/26 CB re-wrote select statement
+ * 25/08/26 CB re-write select statement
+ * 11/10/26 CB future events only, payments required only
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
@@ -133,8 +134,11 @@ class PaymentsModel extends ListModel {
         $query->select('p.preferred_name');
         $query->join('INNER', '#__ra_events AS e ON e.id=a.event_id');
         $query->join('LEFT', '#__ra_profiles AS p ON p.id=a.user_id');
-        $query->where('a.amount_paid IS NOT NULL');
+        // Ignore imported Events
         $query->where('e.api_site_id IS NULL');
+        // Only show payments that have been made
+        $query->where('a.amount_paid IS NOT NULL');
+
         if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
             $query->where('a.state = 1');
         } else {

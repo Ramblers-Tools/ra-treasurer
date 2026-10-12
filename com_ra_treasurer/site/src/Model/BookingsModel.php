@@ -2,8 +2,9 @@
 
 /**
  * 20/08/26 created by component-creator
- * 25/08/26 CB rewrote select
+ * 25/08/26 CB rewrite select
  * 20/08/26 CB set state=1
+ * 11/10/26 CB future events only, payments required only
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
@@ -128,7 +129,13 @@ class BookingsModel extends ListModel {
         $query->join('INNER', '#__ra_events AS e ON e.id=a.event_id');
         $query->join('INNER', '#__ra_profiles AS p ON p.id=a.user_id');
         $query->where('a.amount_paid IS NULL');
+        // Ignore imported Events
         $query->where('e.api_site_id IS NULL');
+        // only select bookable events if payments are required
+        $query->where('e.bookable="1"');
+        $query->where('e.requires_payment="1"');
+        // Only show outstanding payments
+        $query->where('a.amount_paid IS NULL');
         if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
             $query->where('a.state = 1');
         } else {
