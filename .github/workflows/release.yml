@@ -24,17 +24,6 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Building release for v$VERSION"
 
-      - name: Ensure SQL update file exists for this version
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          SQL_FILE="com_ra_treasurer/administrator/sql/updates/${VERSION}.sql"
-          if [ ! -f "$SQL_FILE" ]; then
-            echo "-- No schema changes in ${VERSION}" > "$SQL_FILE"
-            echo "Created empty $SQL_FILE"
-          else
-            echo "$SQL_FILE already exists"
-          fi
-
       - name: Build extension zips
         run: |
           mkdir -p dist/packages
