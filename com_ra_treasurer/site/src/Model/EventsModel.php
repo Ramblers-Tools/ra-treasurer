@@ -1,11 +1,7 @@
 <?php
 
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 10/10/26 CB future events only, payments required only
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
@@ -126,8 +122,6 @@ class EventsModel extends ListModel {
         );
 
         $query->from('`#__ra_events` AS a');
-        $query->where('bookable="1"');
-        $query->where('api_site_id IS NULL');
         // Join over the users for the checked out user.
         $query->select('p.preferred_name ');
         $query->select('(SELECT COUNT(*) FROM #__ra_bookings AS b'
@@ -136,7 +130,14 @@ class EventsModel extends ListModel {
                 . ' WHERE b.state = 1 AND b.event_id = a.id) AS total_paid');
         $query->join('LEFT', '#__contact_details AS c ON c.id=a.contact_id');
         $query->join('LEFT', '#__ra_profiles AS p ON p.id=c.user_id');
-
+        // Ignore imported Events
+        $query->where('a.api_site_id IS NULL');
+        // only show future events
+        $query->where('DATEDIFF(a.event_date, CURRENT_DATE)>=0');
+        // only show events if payments are required
+        $query->where('a.bookable="1"');
+        $query->where('a.requires_payment="1"');
+        
         if (!Factory::getApplication()->getIdentity()->authorise('core.edit', 'com_ra_treasurer')) {
             $query->where('a.state = 1');
         } else {
