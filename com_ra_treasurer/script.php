@@ -3,22 +3,22 @@
 /*
  * Installation script
  * 26/08/26 CB Created
+ * 13/10/26 CB remove Joomla/CMS/File*
  */
 
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Filesystem\File;
-use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
-use Joomla\Filesystem\File;
 use Joomla\Filesystem\Exception\FilesystemException;
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Folder;
 
 class Com_Ra_treasurerInstallerScript {
 
@@ -312,7 +312,7 @@ class Com_Ra_treasurerInstallerScript {
         if ($type == 'uninstall') {
             return true;
         }
-        $new_version = $this->getVersion();
+        $new_version = $this->getInstalledComponentVersion();
         if ($this->original_version !== $new_version) {
             echo '<p>com_ra_treasurer has been upgraded from ' . $this->original_version . ' to ' . $new_version . '</p>';
         } else {
@@ -331,10 +331,6 @@ class Com_Ra_treasurerInstallerScript {
     public function preflight($type, $parent): bool {
         $this->message('Preflight RA Treasurer (type=' . $type . ').');
         if ($type == 'uninstall') {
-            return true;
-        }
-        if ($type == 'install') {
-            $this->message('No action required by preflight on install.');
             return true;
         }
 
