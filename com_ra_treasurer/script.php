@@ -3,6 +3,7 @@
 /*
  * Installation script
  * 26/08/26 CB Created
+ * 14/11/26 CB Do not abort if information not available for previous installation
  */
 
 \defined('_JEXEC') or die;
@@ -344,14 +345,13 @@ class Com_Ra_treasurerInstallerScript {
             } catch (\RuntimeException $exception) {
                 return $this->fail($exception->getMessage());
             }
-
             if ($this->original_version === null) {
-                return $this->fail('Installer could not find readable version information for com_ra_treasurer.');
+                $this->message('Installer could not find readable version information for com_ra_treasurer.');
+            } else {
+                $this->message('com_ra_treasurer already present, version=' . $this->original_version . '.');
             }
-
-            $this->message('com_ra_treasurer already present, version=' . $this->original_version . '.');
         } else {
-            return $this->fail('Installer could not find the existing com_ra_treasurer installation.');
+            $this->message('Installer could not find the existing com_ra_treasurer installation.');
         }
         if (!ComponentHelper::isEnabled('com_ra_tools', true)) {
             return $this->fail('RA Treasurer requires the enabled component com_ra_tools.');
@@ -393,6 +393,8 @@ class Com_Ra_treasurerInstallerScript {
             $this->checkColumn('ra_mail_shots', 'is_scheduled', 'A', 'TINYINT DEFAULT "0" AFTER send_after; ');
             $this->checkColumn('ra_mail_shots', 'cancelled', 'A', 'TINYINT DEFAULT "0" AFTER is_scheduled; ');
             $this->checkColumn('ra_mail_shots', 'reply_to', 'A', 'VARCHAR(255) NULL AFTER cancelled; ');
+
+            $this->checkColumn('ra_profiles', 'created', 'U', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP; ');
         }
      
         return true;

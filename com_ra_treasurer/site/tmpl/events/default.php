@@ -1,10 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 14/10/26 CB only show (i) buttons if payments have been made
  */
 // No direct access
 defined('_JEXEC') or die;
@@ -113,14 +109,14 @@ $target_info = 'index.php?option=com_ra_treasurer&task=events.showPayments&id=';
                         echo '<td>' . $item->max_bookings . '</td>';
                         echo '<td>' . $item->num_confirmed . '</td>';
                         echo '<td>' . $item->total_paid . '</td>';
+                        if ($canEdit || $canDelete){
+                            echo '<td class="center">';
+                            if ($item->total_paid > 0) {
+                                echo $this->toolsHelper->imageButton('I', $target_info . $item->id);
+                            }
+                            echo '</td>';
+                        }
                         ?>
-
-
-                        <?php if ($canEdit || $canDelete): ?>
-                            <td class="center">
-                                <?php echo $this->toolsHelper->imageButton('I', $target_info . $item->id); ?>
-                            </td>
-                        <?php endif; ?>
 
                     </tr>
                 <?php endforeach; ?>

@@ -2,6 +2,7 @@
 /**
  * 20/08/26 created by component-creator
  * 25/08/26 CB changed columns
+ * 14/10/26 CB format button as coloured
  */
 // No direct access
 defined('_JEXEC') or die;
@@ -113,7 +114,7 @@ $wa->useStyle('com_ra_tools.list');
                             <td class="center">
                                 <?php if ($canRecordPayment) : ?>
                                     <button type="button"
-                                            class="btn btn-success btn-sm record-payment-button"
+                                            class="link-button sunset"
                                             data-bs-toggle="modal"
                                             data-bs-target="#recordPaymentModal"
                                             data-booking-id="<?php echo (int) $item->id; ?>"
