@@ -312,7 +312,7 @@ class Com_Ra_treasurerInstallerScript {
         if ($type == 'uninstall') {
             return true;
         }
-        $new_version = $this->getVersion();
+        $new_version = $this->getInstalledComponentVersion();
         if ($this->original_version !== $new_version) {
             echo '<p>com_ra_treasurer has been upgraded from ' . $this->original_version . ' to ' . $new_version . '</p>';
         } else {
