@@ -22,7 +22,6 @@ use Joomla\Filesystem\Folder;
 
 class Com_Ra_treasurerInstallerScript {
 
-    private const MINIMUM_MAILMAN_VERSION = '5.0.18';
     private const MINIMUM_TOOLS_VERSION = '4.0.12';
 
     private $component;
@@ -354,13 +353,6 @@ class Com_Ra_treasurerInstallerScript {
         }
         if (!ComponentHelper::isEnabled('com_ra_tools', true)) {
             return $this->fail('RA Treasurer requires the enabled component com_ra_tools.');
-        }
-        if (!ComponentHelper::isEnabled('com_ra_mailman', true)) {
-            return $this->fail('RA Treasurer requires the enabled component com_ra_mailman.');
-        }
-
-        if (!$this->checkMinimumComponentVersion('com_ra_mailman', self::MINIMUM_MAILMAN_VERSION)) {
-            return false;
         }
 
         if (!$this->checkMinimumComponentVersion('com_ra_tools', self::MINIMUM_TOOLS_VERSION)) {
