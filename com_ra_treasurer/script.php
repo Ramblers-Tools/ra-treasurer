@@ -333,10 +333,6 @@ class Com_Ra_treasurerInstallerScript {
         if ($type == 'uninstall') {
             return true;
         }
-        if ($type == 'install') {
-            $this->message('No action required by preflight on install.');
-            return true;
-        }
 
         if (ComponentHelper::isEnabled('com_ra_treasurer', true)) {
             try {

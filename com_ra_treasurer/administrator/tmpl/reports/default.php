@@ -36,11 +36,9 @@ $reports = [
     <div id="j-main-container" class="span10">
         <div class="clearfix"> </div>
         <?php
-        echo '<ul>';
-        foreach ($reports as $caption => $task) {
-            echo '<li>' . $toolsHelper->buildLink($task, $caption) . '</li>';
-        }
-        echo '</ul>';
+        echo '<div class="dashboard-grid">';
+        echo $toolsHelper->buildDashboardReportBlock('Treasurers reports', $reports);
+        echo '</div>';
 
         echo $toolsHelper->backButton($back);
         ?>
