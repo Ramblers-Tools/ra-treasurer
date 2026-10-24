@@ -1,9 +1,10 @@
 <?php
 
 /*
- * Installation script
+ * Component Installation script
  * 26/08/26 CB Created
  * 14/11/26 CB Do not abort if information not available for previous installation
+ * 24/10/26 CB used SchemaHelper and ToolsHelper for database and UI operations
  */
 
 \defined('_JEXEC') or die;
@@ -13,143 +14,55 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
+use Joomla\CMS\Table\Table;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 use Joomla\Filesystem\Exception\FilesystemException;
 use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
+use Ramblers\Component\Ra_tools\Site\Helpers\SchemaHelper;
+use Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
 
 class Com_Ra_treasurerInstallerScript {
 
-    private const MINIMUM_TOOLS_VERSION = '4.0.12';
+    private const COMPONENT_USERGROUP = 'com_ra_treasurer';
+    private const USERGROUP_CHECK_VERSION = '1.1.2';
 
     private $component;
     private $minimumJoomlaVersion = '4.0';
     private $minimumPHPVersion = JOOMLA_MINIMUM_PHP;
     private $reconfigure_message;
     private $original_version;
+    private $toolsHelper;
+    private $schemaHelper;
+
+    private function getToolsHelper(): ToolsHelper {
+        if ($this->toolsHelper === null) {
+            $this->toolsHelper = new ToolsHelper();
+        }
+
+        return $this->toolsHelper;
+    }
+
+    private function getSchemaHelper(): SchemaHelper {
+        if ($this->schemaHelper === null) {
+            $this->schemaHelper = new SchemaHelper();
+        }
+
+        return $this->schemaHelper;
+    }
 
     function buildButton($url, $text, $newWindow = 0, $colour = '') {
-        if ($colour == '') {
-            $colour = 'sunrise';
-        }
-        $class = 'link-button ' . $colour;
-        //       echo "colour=$colour, code=$code, class=$class<br>";
-        $q = chr(34);
-        $out = "<a class=" . $q . $class . $q;
-        $out .= " href=" . $q . $url . $q;
-        $out .= " target =" . $q . "_self" . $q;
-        $out .= ">";
-        $out .= $text;
-        $out .= "</a>";
-        return $out;
+        return $this->getToolsHelper()->buildButton($url, $text, $newWindow, $colour);
     }
 
     function checkColumn($table, $column, $mode, $details = '') {
-//  $mode = A: add the field, using data supplied in $details
-//  $mode = U: update the field (keeping name the same), using $details
-//  $mode = D: delete the field
-
-        $count = $this->checkColumnExists($table, $column);
-        $table_name = $this->dbPrefix . $table;
-//        echo 'mode=' . $mode . ': Seeking ' . $table_name . '/' . $column . ', count=' . $count . "<br>";
-        if (($mode == 'A') AND ($count == 1)
-                OR ($mode == 'D') AND ($count == 0)) {
-            return true;
-        }
-        if (($mode == 'U') AND ($count == 0)) {
-            return $this->fail('Installer could not update missing field ' . $table_name . '.' . $column . '.');
-        }
-
-        $sql = 'ALTER TABLE ' . $table_name . ' ';
-        if ($mode == 'A') {
-            $sql .= 'ADD ' . $column . ' ';
-            $sql .= $details;
-        } elseif ($mode == 'D') {
-            $sql .= 'DROP ' . $column;
-        } elseif ($mode == 'U') {
-            $sql .= 'CHANGE ' . $column . ' ' . $column . ' ';
-            $sql .= $details;
-        }
-        echo "$sql<br>";
-        $response = $this->executeCommand($sql);
-        if ($response) {
-            echo 'Success';
-        } else {
-            echo 'Failure';
-        }
-        echo ' for ' . $table_name . '<br>';
-        return $count;
-    }
-
-    private function checkColumnExists($table, $column) {
-        $config = Factory::getConfig();
-        $database = $config->get('db');
-        $this->dbPrefix = $config->get('dbprefix');
-
-        $table_name = $this->dbPrefix . $table;
-        $sql = 'SELECT COUNT(COLUMN_NAME) ';
-        $sql .= "FROM information_schema.COLUMNS ";
-        $sql .= "WHERE TABLE_SCHEMA='" . $database . "' AND TABLE_NAME ='" . $this->dbPrefix . $table . "' ";
-        $sql .= "AND COLUMN_NAME='" . $column . "'";
-//    echo "$sql<br>";
-
-        return $this->getValue($sql);
-    }
-
-    private function checkMinimumComponentVersion(string $component, string $requiredVersion): bool {
-        try {
-            $installedVersion = $this->getInstalledComponentVersion($component);
-        } catch (\RuntimeException $exception) {
-            Log::add($exception->getMessage(), Log::ERROR, 'jerror');
-            return $this->fail('RA Treasurer could not read the installed version of ' . $component . '.');
-        }
-
-        if ($installedVersion !== null && version_compare($installedVersion, $requiredVersion, 'ge')) {
-            $this->message('Version ' . $requiredVersion . ' of ' . $component
-                    . ' required; version ' . $installedVersion . ' found.');
-            return true;
-        }
-
-        return $this->fail('RA Treasurer requires ' . $component . ' version ' . $requiredVersion
-                        . ' or later; found ' . ($installedVersion ?: 'no readable version') . '.');
+        return $this->getSchemaHelper()->checkColumn($table, $column, $mode, $details);
     }
 
     function checkTable($table, $details, $details2 = '') {
-
-        $config = Factory::getConfig();
-        $database = $config->get('db');
-        $this->dbPrefix = $config->get('dbprefix');
-
-        $table_name = $this->dbPrefix . $table;
-        $sql = 'SELECT COUNT(COLUMN_NAME) ';
-        $sql .= "FROM information_schema.COLUMNS ";
-        $sql .= "WHERE TABLE_SCHEMA='" . $database . "' AND TABLE_NAME ='" . $table_name . "' ";
-//        echo "$sql<br>";
-
-        $count = $this->getValue($sql);
-        echo 'Seeking ' . $table_name . ', count=' . $count . "<br>";
-        if ($count > 0) {
-            return $count;
-        }
-        $sql = 'CREATE TABLE ' . $table_name . ' ' . $details;
-        echo "$sql<br>";
-        $response = $this->executeCommand($sql);
-        if ($response) {
-            echo 'Table created OK<br>';
-        } else {
-            return $this->fail('Installer failed to create database table ' . $table_name . '.');
-        }
-        if ($details2 != '') {
-            $sql = 'ALTER TABLE ' . $table_name . ' ' . $details2;
-            $response = $this->executeCommand($sql);
-            if ($response) {
-                echo 'Table altered OK<br>';
-            } else {
-                return $this->fail('Installer failed to alter database table ' . $table_name . '.');
-            }
-        }
+        return $this->getSchemaHelper()->checkTable($table, $details, $details2);
     }
 
     private function deleteFile($target) {
@@ -207,11 +120,33 @@ class Com_Ra_treasurerInstallerScript {
         );
     }
 
-    private function executeCommand($sql) {
+    private function ensureComponentUsergroup(): bool {
         $db = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true);
-        $db->setQuery($sql);
-        return $db->execute();
+        $query = $db->getQuery(true)
+                ->select($db->quoteName('id'))
+                ->from($db->quoteName('#__usergroups'))
+                ->where($db->quoteName('title') . ' = :title')
+                ->bind(':title', self::COMPONENT_USERGROUP, ParameterType::STRING);
+        $db->setQuery($query);
+        $groupId = (int) $db->loadResult();
+
+        if ($groupId > 0) {
+            $this->message('Usergroup ' . self::COMPONENT_USERGROUP . ' exists (id=' . $groupId . ').');
+            return true;
+        }
+
+        $table = Table::getInstance('Usergroup', 'JTable', []);
+
+        if (!$table || !$table->save([
+            'title' => self::COMPONENT_USERGROUP,
+            'parent_id' => 1,
+        ])) {
+            $error = $table ? (string) $table->getError() : 'Unable to initialise Usergroup table';
+            return $this->fail('Failed to create usergroup ' . self::COMPONENT_USERGROUP . ': ' . $error);
+        }
+
+        $this->message('Created usergroup ' . self::COMPONENT_USERGROUP . ' (id=' . (int) $table->id . ').');
+        return true;
     }
 
     private function fail(string $message): bool {
@@ -262,33 +197,8 @@ class Com_Ra_treasurerInstallerScript {
         return is_scalar($installedVersion) ? (string) $installedVersion : null;
     }
 
-    private function getValue($sql) {
-        $db = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true);
-        $db->setQuery($sql);
-        return $db->loadResult();
-    }
-
     public function install($parent): bool {
         $this->message('Installing RA Treasurer (com_ra_treasurer).');
-        if (!empty($this->minimumPHPVersion) && version_compare(PHP_VERSION, $this->minimumPHPVersion, '<')) {
-            return $this->fail(Text::sprintf('JLIB_INSTALLER_MINIMUM_PHP', $this->minimumPHPVersion));
-        }
-        if (!empty($this->minimumJoomlaVersion) && version_compare(JVERSION, $this->minimumJoomlaVersion, '<')) {
-            return $this->fail(Text::sprintf('JLIB_INSTALLER_MINIMUM_JOOMLA', $this->minimumJoomlaVersion));
-        }
-
-        if (ComponentHelper::isEnabled('com_ra_tools', true)) {
-            if (!$this->checkMinimumComponentVersion('com_ra_tools', self::MINIMUM_TOOLS_VERSION)) {
-                return false;
-            }
-        } else {
-            return $this->fail('RA Treasurer requires that com_ra_tools is installed and enabled.');
-        }
-
-        if (!ComponentHelper::isEnabled('com_ra_events', true)) {
-            return $this->fail('RA Treasurer requires that com_ra_events is installed and enabled.');
-        }
         /*
           Preview SQL
           ALTER TABLE `j5_ra_bookings` ADD `amount_paid` DECIMAL(7,2) NULL DEFAULT NULL AFTER `custom2`,
@@ -322,7 +232,7 @@ class Com_Ra_treasurerInstallerScript {
         }
 
         echo '<b>Useful links</b><br>';
-        echo $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', 'granite') . '<br>';
+        echo $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', false, 'granite') . '<br>';
         echo $this->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure');
         return true;
     }
@@ -332,8 +242,23 @@ class Com_Ra_treasurerInstallerScript {
         if ($type == 'uninstall') {
             return true;
         }
+        if (!ComponentHelper::isEnabled('com_ra_tools', true)) {
+            return $this->fail('RA Treasurer requires com_ra_tools to be installed and enabled.');
+        }
 
-        if (ComponentHelper::isEnabled('com_ra_treasurer', true)) {
+        if (!class_exists(ToolsHelper::class)) {
+            return $this->fail('RA Treasurer could not load com_ra_tools helpers.');
+        }
+        if (!class_exists(SchemaHelper::class)) {
+            return $this->fail('RA Treasurer could not load com_ra_tools schema helper.');
+        }
+
+        $this->getToolsHelper();
+        $this->getSchemaHelper();
+
+        if ($type == 'install') {
+            $this->original_version = '0.0.0';
+        } elseif (ComponentHelper::isEnabled('com_ra_treasurer', true)) {
             try {
                 $this->original_version = $this->getInstalledComponentVersion();
             } catch (\RuntimeException $exception) {
@@ -347,12 +272,18 @@ class Com_Ra_treasurerInstallerScript {
         } else {
             $this->message('Installer could not find the existing com_ra_treasurer installation.');
         }
-        if (!ComponentHelper::isEnabled('com_ra_tools', true)) {
-            return $this->fail('RA Treasurer requires the enabled component com_ra_tools.');
+
+        $currentVersion = $this->original_version ?? '0.0.0';
+        if (version_compare($currentVersion, self::USERGROUP_CHECK_VERSION, '<')) {
+            if (!$this->ensureComponentUsergroup()) {
+                F$this->fail('Usergroup check for ' . self::COMPONENT_USERGROUP . ' failed.', 'error');
+                return false;
+            }
         }
 
-        if (!$this->checkMinimumComponentVersion('com_ra_tools', self::MINIMUM_TOOLS_VERSION)) {
-            return false;
+        if ($type == 'install') {
+            $this->message('No action required by preflight on install.');
+            return true;
         }
 
         if (version_compare($this->original_version, '1.0.4', 'le')) {

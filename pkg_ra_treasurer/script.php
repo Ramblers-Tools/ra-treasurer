@@ -1,4 +1,9 @@
 <?php
+/*
+ * Package Installation script
+ * 20/10/26 CB Created
+ * 24/10/26 CB Refactored in line with Component script
+ */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
@@ -9,9 +14,9 @@ use Joomla\CMS\Language\Text;
 class pkg_ra_treasurerInstallerScript
 {
     private const MINIMUM_EVENTS_VERSION = '5.0.18';
-    private const MINIMUM_TOOLS_VERSION = '4.0.12';
+    private const MINIMUM_TOOLS_VERSION = '4.0.16';
 
-    private function getInstalledVersion(string $element): ?string
+    private function getInstalledVersion(string $element = 'com_ra_treasurer'): ?string
     {
         $db = Factory::getContainer()->get('DatabaseDriver');
         $query = $db->getQuery(true)
@@ -35,14 +40,45 @@ class pkg_ra_treasurerInstallerScript
         Factory::getApplication()->enqueueMessage($message, 'error');
         Log::add($message, Log::ERROR, 'jerror');
         // echo also helps surface the message in some installers
-        echo '<p style="color:#c00;"><strong>' . htmlspecialchars($message) . '</strong></p>';
+        $this->message('<p style="color:#c00;"><strong>' . htmlspecialchars($message). '</strong></p>');
         return false;
+    }
+
+    private function message(string $message): void {
+        Factory::getApplication()->enqueueMessage($message, 'message');
+    }
+
+    public function postflight($type, $parent) {
+        if ($type == 'uninstall') {
+            return true;
+        }
+        $new_version =$this->getInstalledVersion();
+        if ($this->original_version !== $new_version) {
+            echo '<p>com_ra_treasurer has been upgraded from ' . $this->original_version . ' to ' . $new_version . '</p>';
+        } else {
+            echo '<p>com_ra_treasurer is unchanged at ' . $new_version . '</p>';
+        }
+        if ($this->reconfigure_message == true) {
+            $this->message('Please review and update the configuration settings for com_ra_treasurer.');
+        }
+        $message = '<b>Useful links</b><br>'
+                . $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', false, 'granite') . '<br>'
+                . $this->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure');
+        echo $message;
+        return true;
     }
 
     public function preflight($type, $parent): bool
     {
+        $this->message('Preflight RA Treasurer (type=' . $type . ').');
         if ($type === 'uninstall') {
             return true;
+        }
+
+        // Check com_ra_tools 
+        $toolsVersion = $this->getInstalledVersion('com_ra_tools');
+        if ($toolsVersion === null || version_compare($toolsVersion, self::MINIMUM_TOOLS_VERSION, '<')) {
+            return $this->fail('RA Treasurer requires com_ra_tools ' . self::MINIMUM_TOOLS_VERSION . ' or later; found ' . ($toolsVersion ?: 'not installed') . '.');
         }
 
         // Check com_ra_events
@@ -50,15 +86,10 @@ class pkg_ra_treasurerInstallerScript
         if ($eventsVersion === null) {
             return $this->fail('RA Treasurer requires com_ra_events ' . self::MINIMUM_EVENTS_VERSION . ' or later; com_ra_events is not installed.');
         }
-//        if (version_compare($mailmanVersion, self::MINIMUM_MAILMAN_VERSION, '<')) {
-//            return $this->fail('RA Treasurer requires com_ra_events ' . self::MINIMUM_EVENTS_VERSION . ' or later; found ' . $mailmanVersion . '. Please upgrade com_ra_events first.');
-//        }
-
-        // Check com_ra_tools (example)
-        $toolsVersion = $this->getInstalledVersion('com_ra_tools');
-        if ($toolsVersion === null || version_compare($toolsVersion, self::MINIMUM_TOOLS_VERSION, '<')) {
-            return $this->fail('RA Treasurer requires com_ra_tools ' . self::MINIMUM_TOOLS_VERSION . ' or later; found ' . ($toolsVersion ?: 'not installed') . '.');
+        if (version_compare($eventsVersion, self::MINIMUM_EVENTS_VERSION, '<')) {
+            return $this->fail('RA Treasurer requires com_ra_events ' . self::MINIMUM_EVENTS_VERSION . ' or later; found ' . $eventsVersion . '. Please upgrade com_ra_events first.');
         }
+
 
         // All good
         return true;
