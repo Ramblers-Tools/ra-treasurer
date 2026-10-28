@@ -8,7 +8,7 @@
     <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
     <authorEmail>support@ramblers.tools</authorEmail>
     <authorUrl>https://ramblers.tools</authorUrl>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <description>Installs the RA Treasurer component for Ramblers groups</description>
     <scriptfile>script.php</scriptfile>
 <changelogurl>https://raw.githubusercontent.com/Ramblers-Tools/ra-treasurer/main/changelog.xml</changelogurl>

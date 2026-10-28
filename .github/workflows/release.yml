@@ -39,6 +39,7 @@ jobs:
           mkdir -p dist/pkg
 
           cp pkg_ra_treasurer/pkg_ra_treasurer.xml dist/pkg/pkg_ra_treasurer.xml
+          cp pkg_ra_treasurer/script.php dist/pkg/script.php
 
           mkdir -p dist/pkg/packages
           cp dist/packages/com_ra_treasurer.zip dist/pkg/packages/

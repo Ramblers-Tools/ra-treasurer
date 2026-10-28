@@ -38,6 +38,7 @@ jobs:
 
           # Copy package manifest into staging dir
           cp pkg_ra_treasurer/pkg_ra_treasurer.xml dist/pkg/pkg_ra_treasurer.xml
+          cp pkg_ra_treasurer/script.php dist/pkg/script.php
 
           # Copy extension zip into packages/ subfolder
           mkdir -p dist/pkg/packages
