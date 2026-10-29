@@ -66,8 +66,8 @@ class pkg_ra_treasurerInstallerScript
             $this->message('Please review and update the configuration settings for com_ra_treasurer.');
         }
 */
-        echo $this->toolsHelper->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', false, 'granite') . '<br>';
-        echo $this->toolsHelper->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure') . '<br>';
+        echo $this->toolsHelper->buildButton('administrator/index.php?option=com_ra_tools&view=dashboard', 'Dashboard', false, 'granite') . '<br>';
+        echo $this->toolsHelper->buildButton('administrator/index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure') . '<br>';
         return true;
     }
 
