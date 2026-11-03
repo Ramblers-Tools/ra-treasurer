@@ -98,6 +98,7 @@ class pkg_ra_treasurerInstallerScript
         }
         $this->toolsHelper = new ToolsHelper();
 
+
         // All good
         return true;
     }
