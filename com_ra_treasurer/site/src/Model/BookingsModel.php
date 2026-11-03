@@ -5,6 +5,7 @@
  * 25/08/26 CB rewrite select
  * 20/08/26 CB set state=1
  * 11/10/26 CB future events only, payments required only
+ * 02/11/26 CB don't change state when booking is recorded (leave this for the Organiser)
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
