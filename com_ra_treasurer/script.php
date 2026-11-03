@@ -33,9 +33,9 @@ class Com_Ra_treasurerInstallerScript {
     private $minimumJoomlaVersion = '4.0';
     private $minimumPHPVersion = JOOMLA_MINIMUM_PHP;
     private $reconfigure_message;
-    private $original_version;
-    private $toolsHelper;
+    private $original_version;  
     private $schemaHelper;
+    private $toolsHelper;
 
     private function getToolsHelper(): ToolsHelper {
         if ($this->toolsHelper === null) {
@@ -120,32 +120,34 @@ class Com_Ra_treasurerInstallerScript {
         );
     }
 
-    private function ensureComponentUsergroup(): bool {
+    private function ensureComponentUsergroup(string $component): bool {
         $db = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true)
-                ->select($db->quoteName('id'))
-                ->from($db->quoteName('#__usergroups'))
-                ->where($db->quoteName('title') . ' = :title')
-                ->bind(':title', self::COMPONENT_USERGROUP, ParameterType::STRING);
-        $db->setQuery($query);
-        $groupId = (int) $db->loadResult();
+        $sql = 'SELECT id FROM #__usergroups WHERE title = '. $db->q($component)  ;
+        $groupId = $this->toolsHelper->getValue($sql);
+//        $query = $db->getQuery(true)
+//                ->select($db->quoteName('id'))
+//                ->from($db->quoteName('#__usergroups'))
+//                ->where($db->quoteName('title') . ' = :title')
+//                ->bind(':title', self::COMPONENT_USERGROUP, ParameterType::STRING);
+//        $db->setQuery($query);
+//        $groupId = (int) $db->loadResult();
 
         if ($groupId > 0) {
-            $this->message('Usergroup ' . self::COMPONENT_USERGROUP . ' exists (id=' . $groupId . ').');
+            $this->message('Usergroup ' . $component . ' exists (id=' . $groupId . ').');
             return true;
         }
 
         $table = Table::getInstance('Usergroup', 'JTable', []);
 
         if (!$table || !$table->save([
-            'title' => self::COMPONENT_USERGROUP,
+            'title' => $component,
             'parent_id' => 1,
         ])) {
             $error = $table ? (string) $table->getError() : 'Unable to initialise Usergroup table';
-            return $this->fail('Failed to create usergroup ' . self::COMPONENT_USERGROUP . ': ' . $error);
+            return $this->fail('Failed to create usergroup ' . $component . ': ' . $error);
         }
 
-        $this->message('Created usergroup ' . self::COMPONENT_USERGROUP . ' (id=' . (int) $table->id . ').');
+        $this->message('Created usergroup ' . $component . ' (id=' . (int) $table->id . ').');
         return true;
     }
 
@@ -238,7 +240,7 @@ class Com_Ra_treasurerInstallerScript {
     }
 
     public function preflight($type, $parent): bool {
-        $this->message('Preflight RA Treasurer (type=' . $type . ').');
+        $this->message('Preflight RA Treasurer component(type=' . $type . ').');
         if ($type == 'uninstall') {
             return true;
         }
@@ -275,8 +277,8 @@ class Com_Ra_treasurerInstallerScript {
 
         $currentVersion = $this->original_version ?? '0.0.0';
         if (version_compare($currentVersion, self::USERGROUP_CHECK_VERSION, '<')) {
-            if (!$this->ensureComponentUsergroup()) {
-                F$this->fail('Usergroup check for ' . self::COMPONENT_USERGROUP . ' failed.', 'error');
+            if (!$this->ensureComponentUsergroup(self::COMPONENT_USERGROUP)) {
+                $this->fail('Usergroup check for ' . self::COMPONENT_USERGROUP . ' failed.', 'error');
                 return false;
             }
         }

@@ -10,11 +10,13 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Extension\ExtensionHelper;
 use Joomla\CMS\Language\Text;
+use Ramblers\Component\Ra_tools\Site\Helpers\ToolsHelper;
 
 class pkg_ra_treasurerInstallerScript
 {
-    private const MINIMUM_EVENTS_VERSION = '5.0.18';
+    private const MINIMUM_EVENTS_VERSION = '2.15.1';
     private const MINIMUM_TOOLS_VERSION = '4.0.16';
+    private $toolsHelper;
 
     private function getInstalledVersion(string $element = 'com_ra_treasurer'): ?string
     {
@@ -52,6 +54,8 @@ class pkg_ra_treasurerInstallerScript
         if ($type == 'uninstall') {
             return true;
         }
+        /*
+        Should this be here or in the component script?
         $new_version =$this->getInstalledVersion();
         if ($this->original_version !== $new_version) {
             echo '<p>com_ra_treasurer has been upgraded from ' . $this->original_version . ' to ' . $new_version . '</p>';
@@ -61,16 +65,15 @@ class pkg_ra_treasurerInstallerScript
         if ($this->reconfigure_message == true) {
             $this->message('Please review and update the configuration settings for com_ra_treasurer.');
         }
-        $message = '<b>Useful links</b><br>'
-                . $this->buildButton('index.php?option=com_ra_tools&view=dashboard', 'Dashboard', false, 'granite') . '<br>'
-                . $this->buildButton('index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure');
-        echo $message;
+*/
+        echo $this->toolsHelper->buildButton('administrator/index.php?option=com_ra_tools&view=dashboard', 'Dashboard', false, 'granite') . '<br>';
+        echo $this->toolsHelper->buildButton('administrator/index.php?option=com_config&view=component&component=com_ra_treasurer', 'Configure') . '<br>';
         return true;
     }
 
     public function preflight($type, $parent): bool
     {
-        $this->message('Preflight RA Treasurer (type=' . $type . ').');
+        $this->message('Preflight RA Treasurer package(type=' . $type . ').');
         if ($type === 'uninstall') {
             return true;
         }
@@ -86,9 +89,14 @@ class pkg_ra_treasurerInstallerScript
         if ($eventsVersion === null) {
             return $this->fail('RA Treasurer requires com_ra_events ' . self::MINIMUM_EVENTS_VERSION . ' or later; com_ra_events is not installed.');
         }
-        if (version_compare($eventsVersion, self::MINIMUM_EVENTS_VERSION, '<')) {
-            return $this->fail('RA Treasurer requires com_ra_events ' . self::MINIMUM_EVENTS_VERSION . ' or later; found ' . $eventsVersion . '. Please upgrade com_ra_events first.');
+//        if (version_compare($eventsVersion, self::MINIMUM_EVENTS_VERSION, '<')) {
+//            return $this->fail('RA Treasurer requires com_ra_events ' . self::MINIMUM_EVENTS_VERSION . ' or later; found ' . $eventsVersion . '. Please upgrade com_ra_events first.');
+//        }
+
+        if (!class_exists(ToolsHelper::class)) {
+            return $this->fail('RA Treasurer could not load com_ra_tools helpers.');
         }
+        $this->toolsHelper = new ToolsHelper();
 
 
         // All good
