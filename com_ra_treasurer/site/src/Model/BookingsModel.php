@@ -5,6 +5,7 @@
  * 25/08/26 CB rewrite select
  * 20/08/26 CB set state=1
  * 11/10/26 CB future events only, payments required only
+ * 20/11/26 CB Don't change state when recording payment
  */
 
 namespace Ramblers\Component\Ra_treasurer\Site\Model;
@@ -197,7 +198,6 @@ class BookingsModel extends ListModel {
                 ->set($db->quoteName('amount_paid') . ' = ' . $db->quote($amountPaid))
                 ->set($db->quoteName('payment_created_by') . ' = ' . $createdBy)
                 ->set($db->quoteName('payment_created') . ' = ' . $db->quote($created))
-                ->set($db->quoteName('state') . '=1')
                 ->where($db->quoteName('id') . ' = ' . $bookingId)
                 ->where($db->quoteName('amount_paid') . ' IS NULL');
         if (JDEBUG) {
