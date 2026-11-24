@@ -1,6 +1,7 @@
 <?php
 /**
  * 14/10/26 CB only show (i) buttons if payments have been made
+ * 20/11/26 CB add page title
  */
 // No direct access
 defined('_JEXEC') or die;
@@ -31,6 +32,7 @@ $canDelete = $user->authorise('core.delete', 'com_ra_treasurer');
 $wa = $this->document->getWebAssetManager();
 $wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
 $wa->useStyle('com_ra_tools.list');
+echo '<h2>Future Bookable events</h2>';
 $target_info = 'index.php?option=com_ra_treasurer&task=events.showPayments&id=';
 ?>
 

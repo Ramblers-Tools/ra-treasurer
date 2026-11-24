@@ -1,10 +1,6 @@
 <?php
 /**
- * @version    CVS: 1.0.2
- * @package    Com_Ra_treasurer
- * @author     Charlie Bigley <charlie@ramblers.tools>
- * @copyright  Ramblers Tools
- * @license    GNU General Public License version 2 or later; see LICENSE.txt
+ * 20/11/26 CB add page title
  */
 // No direct access
 defined('_JEXEC') or die;
@@ -35,6 +31,7 @@ $canDelete = $user->authorise('core.delete', 'com_ra_treasurer');
 $wa = $this->document->getWebAssetManager();
 $wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
 $wa->useStyle('com_ra_tools.list');
+echo '<h2>Recent Payments</h2>';
 ?>
 
 <?php if ($this->params->get('show_page_heading')) : ?>

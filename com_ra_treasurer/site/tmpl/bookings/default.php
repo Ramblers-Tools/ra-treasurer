@@ -3,6 +3,7 @@
  * 20/08/26 created by component-creator
  * 25/08/26 CB changed columns
  * 14/10/26 CB format button as coloured
+ * 20/11/26 CB add page title
  */
 // No direct access
 defined('_JEXEC') or die;
@@ -35,6 +36,7 @@ $itemId = Factory::getApplication()->input->getInt('Itemid');
 $wa = $this->document->getWebAssetManager();
 $wa->getRegistry()->addExtensionRegistryFile('com_ra_tools');
 $wa->useStyle('com_ra_tools.list');
+echo '<h2>Outstanding Payments</h2>';
 ?>
 
 <?php if ($this->params->get('show_page_heading')) : ?>
