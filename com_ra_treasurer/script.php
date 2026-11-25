@@ -121,6 +121,7 @@ class Com_Ra_treasurerInstallerScript {
     }
 
     private function ensureComponentUsergroup(string $component): bool {
+    // 01/11/26 This function copied to ToolsHelper as checkUsergroup
         $db = Factory::getContainer()->get(DatabaseInterface::class);
         $sql = 'SELECT id FROM #__usergroups WHERE title = '. $db->q($component)  ;
         $groupId = $this->toolsHelper->getValue($sql);

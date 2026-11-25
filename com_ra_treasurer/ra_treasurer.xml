@@ -2,7 +2,7 @@
 <extension type="component" version="4.0" method="upgrade">
     <name>RA Treasurer</name>
     <element>com_ra_treasurer</element>
-    <creationDate>20/10/2026</creationDate>
+    <creationDate>03/11/2026</creationDate>
     <copyright>2026 Ramblers Tools</copyright>
     <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
     <author>Charlie Bigley</author>
