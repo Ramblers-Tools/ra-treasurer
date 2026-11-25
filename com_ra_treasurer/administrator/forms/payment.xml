@@ -21,7 +21,7 @@
             name="amount_paid"
             type="number"
             label="Amount Paid"
-            description="Value of the payment made. Must be a positive number."
+            description="Value of the payment made. To record a refund, set to zero."
             filter="float"
             min="0.01"
             max="99999.99"
